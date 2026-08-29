@@ -8,6 +8,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates tini \
     && rm -rf /var/lib/apt/lists/*
 
+RUN corepack enable
+
 ENV MCPUP_APP_DIR=/home/node/app \
     MCPUP_API_URL=http://host.docker.internal:3000 \
     MCPUP_SKIP_BUILD=false \
@@ -31,6 +33,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
 
 STOPSIGNAL SIGTERM
 
-# tini reaps zombies and, with -g, signals the whole process group (npm -> sh -> node).
+# tini reaps zombies and, with -g, signals the whole process group.
 ENTRYPOINT ["/usr/bin/tini", "-g", "--", "/opt/mcpup/run.sh"]
 CMD []

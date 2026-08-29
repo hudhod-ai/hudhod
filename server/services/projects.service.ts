@@ -1,12 +1,11 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
-
-import { db } from "@/server/db/client";
-import { projects } from "@/server/db/schema";
+import { createClient } from "@/lib/server";
+import { mcpUseStarterTree } from "@/lib/templates/mcpuse-starter";
 import {
   BadRequestError,
   ConflictError,
   NotFoundError,
 } from "@/server/http/errors";
+import { createVersionForProject } from "@/server/services/versions.service";
 
 export type ProjectInsert = {
   name: string;
@@ -15,32 +14,69 @@ export type ProjectInsert = {
   ownerId: string;
 };
 
+export type Project = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  ownerId: string;
+  currentVersionId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+
+type ProjectRow = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  owner_id: string;
+  current_version_id: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+function toProject(row: ProjectRow): Project {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description,
+    ownerId: row.owner_id,
+    currentVersionId: row.current_version_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
+  };
+}
+
 export async function listProjectsForOwner(ownerId: string) {
-  return db
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
     .select()
-    .from(projects)
-    .where(and(eq(projects.ownerId, ownerId), isNull(projects.deletedAt)))
-    .orderBy(desc(projects.updatedAt));
+    .eq("owner_id", ownerId)
+    .is("deleted_at", null)
+    .order("updated_at", { ascending: false });
+  if (error) throw error;
+  return (data as ProjectRow[]).map(toProject);
 }
 
 export async function getProjectById(projectId: string, ownerId: string) {
-  const result = await db
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
     .select()
-    .from(projects)
-    .where(
-      and(
-        eq(projects.id, projectId),
-        eq(projects.ownerId, ownerId),
-        isNull(projects.deletedAt),
-      ),
-    )
-    .limit(1);
-
-  if (!result[0]) {
+    .eq("id", projectId)
+    .eq("owner_id", ownerId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error || !data) {
     throw new NotFoundError("Project not found.");
   }
-
-  return result[0];
+  return toProject(data as ProjectRow);
 }
 
 export async function createProject(input: ProjectInsert) {
@@ -49,35 +85,36 @@ export async function createProject(input: ProjectInsert) {
     throw new BadRequestError("Project slug is required.");
   }
 
-  const existing = await db
-    .select({ id: projects.id })
-    .from(projects)
-    .where(
-      and(
-        eq(projects.ownerId, input.ownerId),
-        eq(projects.slug, slug),
-        isNull(projects.deletedAt),
-      ),
-    )
-    .limit(1);
-
-  if (existing[0]) {
-    throw new ConflictError("A project with this slug already exists.");
-  }
-
-  const [project] = await db
-    .insert(projects)
-    .values({
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .insert({
       name: input.name,
       slug,
       description: input.description ?? null,
-      ownerId: input.ownerId,
-      createdBy: input.ownerId,
-      updatedBy: input.ownerId,
+      owner_id: input.ownerId,
+      created_by: input.ownerId,
+      updated_by: input.ownerId,
     })
-    .returning();
+    .select()
+    .single();
+  if (error) {
+    if (error.code === "23505")
+      throw new ConflictError("A project with this slug already exists.");
+    throw error;
+  }
+  const project = toProject(data as ProjectRow);
+  const starterVersion = await createVersionForProject(
+    project.id,
+    input.ownerId,
+    {
+      label: "Initial starter",
+      archive: Buffer.from(JSON.stringify(mcpUseStarterTree)),
+      contentType: "application/json",
+    },
+  );
 
-  return project;
+  return { ...project, currentVersionId: starterVersion.id };
 }
 
 export async function updateProject(
@@ -92,45 +129,40 @@ export async function updateProject(
     throw new BadRequestError("Project slug cannot be empty.");
   }
 
-  const [updated] = await db
-    .update(projects)
-    .set({
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .update({
       name: input.name ?? current.name,
       slug: nextSlug,
       description: input.description ?? current.description,
-      updatedAt: new Date(),
-      updatedBy: ownerId,
+      updated_at: new Date().toISOString(),
+      updated_by: ownerId,
     })
-    .where(
-      and(
-        eq(projects.id, projectId),
-        eq(projects.ownerId, ownerId),
-        isNull(projects.deletedAt),
-      ),
-    )
-    .returning();
-
-  return updated;
+    .eq("id", projectId)
+    .eq("owner_id", ownerId)
+    .is("deleted_at", null)
+    .select()
+    .single();
+  if (error) throw error;
+  return toProject(data as ProjectRow);
 }
 
 export async function softDeleteProject(projectId: string, ownerId: string) {
   const current = await getProjectById(projectId, ownerId);
+  const deletedAt = new Date().toISOString();
 
-  const [deleted] = await db
-    .update(projects)
-    .set({
-      deletedAt: new Date(),
-      updatedAt: new Date(),
-      updatedBy: ownerId,
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("projects")
+    .update({
+      deleted_at: deletedAt,
+      updated_at: deletedAt,
+      updated_by: ownerId,
     })
-    .where(
-      and(
-        eq(projects.id, current.id),
-        eq(projects.ownerId, ownerId),
-        isNull(projects.deletedAt),
-      ),
-    )
-    .returning();
-
-  return deleted;
+    .eq("id", current.id)
+    .eq("owner_id", ownerId)
+    .is("deleted_at", null);
+  if (error) throw error;
+  return { ...current, deletedAt, updatedAt: deletedAt };
 }

@@ -1,13 +1,24 @@
 import "server-only";
 
-import { env } from "@/server/env";
+import { createClient } from "@/lib/server";
+import { UnauthorizedError } from "@/server/http/errors";
 
 export interface AuthContext {
   userId: string;
 }
 
 export async function getAuthContext(): Promise<AuthContext> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new UnauthorizedError();
+  }
+
   return {
-    userId: env.AUTH_DEMO_USER_ID,
+    userId: user.id,
   };
 }

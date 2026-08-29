@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FileSystemTree } from "@webcontainer/api";
+import { createClient } from "@/lib/client";
 import { getWebContainer } from "@/lib/webcontainer/boot";
 import { attachWebContainerEvents } from "@/lib/webcontainer/events";
 import { mountAndIndex, exportFileSystem } from "@/lib/webcontainer/filesystem";
@@ -36,6 +37,23 @@ type IdeWorkspaceProps = {
   projectId?: string;
   projectName?: string;
 };
+
+type StoredVersion = {
+  id: string;
+  revision: number;
+  storage_bucket: string;
+  storage_key: string;
+};
+
+async function downloadVersion(
+  version: StoredVersion,
+): Promise<FileSystemTree> {
+  const { data, error } = await createClient()
+    .storage.from(version.storage_bucket)
+    .download(version.storage_key);
+  if (error) throw error;
+  return JSON.parse(await data.text()) as FileSystemTree;
+}
 
 export function IdeWorkspace({
   projectId,
@@ -71,7 +89,35 @@ export function IdeWorkspace({
         const instance = await getWebContainer();
         cleanupEvents = attachWebContainerEvents(instance);
 
-        await mountAndIndex(instance, mcpUseStarterTree);
+        let initialTree = mcpUseStarterTree;
+        if (projectId) {
+          const { data: latestVersion, error: versionError } =
+            await createClient()
+              .from("project_versions")
+              .select("id, revision, storage_bucket, storage_key")
+              .eq("project_id", projectId)
+              .is("deleted_at", null)
+              .order("revision", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+          if (versionError) throw versionError;
+
+          if (latestVersion) {
+            initialTree = await downloadVersion(latestVersion as StoredVersion);
+            useLogsStore
+              .getState()
+              .append(
+                "lifecycle",
+                `Loaded project version ${latestVersion.revision}.\n`,
+              );
+          } else {
+            useLogsStore
+              .getState()
+              .append("lifecycle", "Loaded starter project.\n");
+          }
+        }
+
+        await mountAndIndex(instance, initialTree);
         await runInstall(instance);
         await runDev(instance);
       } catch (err) {
@@ -121,19 +167,63 @@ export function IdeWorkspace({
     try {
       const instance = await getWebContainer();
       const tree = await exportFileSystem(instance);
-      const formData = new FormData();
-      formData.append(
-        "file",
-        new File([JSON.stringify(tree)], `${projectName ?? "project"}.json`, {
-          type: "application/json",
-        }),
-      );
-      formData.append("label", `Saved ${new Date().toLocaleString()}`);
-      const response = await fetch(`/api/projects/${projectId}/versions`, {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) throw new Error("Could not save project version.");
+      const supabase = createClient();
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
+      if (userError || !userData.user)
+        throw new Error("You must be signed in to save a version.");
+      const { data: latest, error: latestError } = await supabase
+        .from("project_versions")
+        .select("revision")
+        .eq("project_id", projectId)
+        .is("deleted_at", null)
+        .order("revision", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latestError) throw latestError;
+      const revision = (latest?.revision ?? 0) + 1;
+      const contents = JSON.stringify(tree);
+      const storageKey = `projects/${projectId}/versions/${revision}.json`;
+      const archive = new Blob([contents], { type: "application/json" });
+      const { error: uploadError } = await supabase.storage
+        .from("project-archives")
+        .upload(storageKey, archive, { contentType: "application/json" });
+      if (uploadError) throw uploadError;
+      const checksum = Array.from(
+        new Uint8Array(
+          await crypto.subtle.digest(
+            "SHA-256",
+            new TextEncoder().encode(contents),
+          ),
+        ),
+        (byte) => byte.toString(16).padStart(2, "0"),
+      ).join("");
+      const { data: version, error: insertError } = await supabase
+        .from("project_versions")
+        .insert({
+          project_id: projectId,
+          revision,
+          label: `Saved ${new Date().toLocaleString()}`,
+          storage_key: storageKey,
+          storage_bucket: "project-archives",
+          content_type: "application/json",
+          size_bytes: archive.size,
+          checksum_sha256: checksum,
+          file_count: 1,
+          created_by: userData.user.id,
+          updated_by: userData.user.id,
+        })
+        .select("id")
+        .single();
+      if (insertError) throw insertError;
+      const { error: projectError } = await supabase
+        .from("projects")
+        .update({
+          current_version_id: version.id,
+          updated_by: userData.user.id,
+        })
+        .eq("id", projectId);
+      if (projectError) throw projectError;
       useLogsStore.getState().append("lifecycle", "Project version saved.\n");
     } catch (err) {
       useWebContainerStore
@@ -150,11 +240,15 @@ export function IdeWorkspace({
     if (!revision) return;
     setRestoring(true);
     try {
-      const response = await fetch(
-        `/api/projects/${projectId}/versions/${revision}/archive`,
-      );
-      if (!response.ok) throw new Error("Could not download project version.");
-      const tree = (await response.json()) as FileSystemTree;
+      const { data: version, error } = await createClient()
+        .from("project_versions")
+        .select("id, revision, storage_bucket, storage_key")
+        .eq("project_id", projectId)
+        .eq("revision", Number(revision))
+        .is("deleted_at", null)
+        .maybeSingle();
+      if (error || !version) throw new Error("Could not load project version.");
+      const tree = await downloadVersion(version as StoredVersion);
       const instance = await getWebContainer();
       await instance.mount(tree);
       await restartDev(instance);

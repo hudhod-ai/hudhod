@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# mcpup
 
-## Getting Started
+Project version management with Supabase Auth, Postgres, Row Level Security, and private Storage.
 
-First, run the development server:
+## Local development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+pnpm supabase:start
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The local Supabase API runs at `http://127.0.0.1:54321`; Studio runs at `http://127.0.0.1:54323`. Copy the local API URL and publishable key printed by `pnpm supabase:start` into `.env.local` when developing against the local stack.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Schema, RLS policies, Storage bucket configuration, and Auth profile trigger live in `supabase/migrations/`. Apply them to the linked project with:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm supabase:db:push
+```
 
-## Learn More
+## Environments
 
-To learn more about Next.js, take a look at the following resources:
+Each development, test/UAT, and production environment should have a separate Supabase project. To move the schema to another project, authenticate with the Supabase CLI, then run:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm exec supabase link --project-ref <new-project-ref>
+pnpm supabase:db:push
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Set that environment's `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and server-only `SUPABASE_SERVICE_ROLE_KEY`. No application code changes are needed.
 
-## Deploy on Vercel
+## Revision deployments
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Every project revision receives a unique deployment token. Supply it to the bootstrap image as `MCPUP_API_TOKEN`; it only authorizes retrieval of that exact revision.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+docker run --rm -p 8080:8080 \
+	-e MCPUP_PROJECT_ID=<project-uuid> \
+	-e MCPUP_REVISION=1 \
+	-e MCPUP_API_TOKEN=<revision-deployment-token> \
+	osamanj93/mcpup-bootstrap
+```

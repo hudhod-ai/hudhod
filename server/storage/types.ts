@@ -1,5 +1,3 @@
-export type StorageDriver = "minio" | "supabase";
-
 export interface StoredArchive {
   key: string;
   bucket: string;

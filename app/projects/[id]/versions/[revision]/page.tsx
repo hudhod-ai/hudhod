@@ -62,6 +62,12 @@ export default async function ProjectVersionPage({
           </p>
         </div>
         <div>
+          <p className="text-sm text-zinc-500">Deployment token</p>
+          <p className="mt-1 break-all font-mono text-sm text-zinc-700">
+            {version.downloadToken}
+          </p>
+        </div>
+        <div>
           <p className="text-sm text-zinc-500">Created</p>
           <p className="mt-1 text-zinc-700">
             {new Date(version.createdAt).toLocaleString()}

@@ -9,13 +9,13 @@ node /opt/mcpup/bootstrap.mjs
 cd "$MCPUP_APP_DIR"
 
 echo "[mcpup-bootstrap] Installing dependencies"
-npm install --no-audit --no-fund
+pnpm install --no-frozen-lockfile
 
 if [[ "${MCPUP_SKIP_BUILD}" == "true" ]]; then
   echo "[mcpup-bootstrap] Skipping build (MCPUP_SKIP_BUILD=true)"
 else
   echo "[mcpup-bootstrap] Building project"
-  npm run build
+  pnpm run build
 fi
 
 # exec so the app replaces this shell and receives signals from tini directly.
@@ -25,4 +25,4 @@ if [[ $# -gt 0 ]]; then
 fi
 
 echo "[mcpup-bootstrap] Starting server on ${HOST}:${PORT}"
-exec npm run start -- -p "${PORT}" --host "${HOST}" --with-inspector
+exec pnpm run start -- -p "${PORT}" --host "${HOST}" --with-inspector

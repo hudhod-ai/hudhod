@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { signOutAction } from "@/app/auth/actions";
 import { deleteProjectAction } from "@/app/projects/actions";
 import { getAuthContext } from "@/server/auth/context";
 import { listProjectsForOwner } from "@/server/services/projects.service";
@@ -19,12 +20,19 @@ export default async function ProjectsPage() {
             Project dashboard
           </h1>
         </div>
-        <Link
-          href="/projects/new"
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700"
-        >
-          New project
-        </Link>
+        <div className="flex items-center gap-3">
+          <form action={signOutAction}>
+            <button className="rounded-md border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100">
+              Sign out
+            </button>
+          </form>
+          <Link
+            href="/projects/new"
+            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700"
+          >
+            New project
+          </Link>
+        </div>
       </header>
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
