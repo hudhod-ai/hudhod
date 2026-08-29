@@ -3,5 +3,5 @@ allowBuilds:
   sharp: false
   unrs-resolver: false
 minimumReleaseAgeExclude:
-  - '@aws-sdk/client-s3@3.1120.0'
-  - '@aws-sdk/s3-request-presigner@3.1120.0'
+  - "@aws-sdk/client-s3@3.1120.0"
+  - "@aws-sdk/s3-request-presigner@3.1120.0"

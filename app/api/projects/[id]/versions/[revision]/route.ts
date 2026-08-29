@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthContext } from "@/server/auth/context";
-import {
-  getVersion,
-  softDeleteVersion,
-} from "@/server/services/versions.service";
 import { toProblemResponse } from "@/server/http/errors";
+import { getVersion, softDeleteVersion } from "@/server/services/versions.service";
 
 export async function GET(
   _request: NextRequest,

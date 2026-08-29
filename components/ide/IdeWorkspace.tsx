@@ -1,27 +1,26 @@
 "use client";
 
+import type { FileSystemTree } from "@webcontainer/api";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FileSystemTree } from "@webcontainer/api";
+
+import { resetLayout } from "@/components/dockview/panelRegistry";
+import { TooltipProvider } from "@/components/ui/Tooltip";
 import { createClient } from "@/lib/client";
+import { mcpUseStarterTree } from "@/lib/templates/mcpuse-starter";
 import { getWebContainer } from "@/lib/webcontainer/boot";
 import { attachWebContainerEvents } from "@/lib/webcontainer/events";
 import { mountAndIndex, exportFileSystem } from "@/lib/webcontainer/filesystem";
 import { runInstall, runDev, restartDev } from "@/lib/webcontainer/process";
-import { mcpUseStarterTree } from "@/lib/templates/mcpuse-starter";
-import { useWebContainerStore } from "@/store/useWebContainerStore";
-import { useThemeStore } from "@/store/useThemeStore";
-import { useLogsStore } from "@/store/useLogsStore";
 import { useDockviewStore } from "@/store/useDockviewStore";
-import { resetLayout } from "@/components/dockview/panelRegistry";
-import { TooltipProvider } from "@/components/ui/Tooltip";
+import { useLogsStore } from "@/store/useLogsStore";
+import { useThemeStore } from "@/store/useThemeStore";
+import { useWebContainerStore } from "@/store/useWebContainerStore";
+
 import { ActivityBar } from "./ActivityBar";
 
 const DockviewLayout = dynamic(
-  () =>
-    import("@/components/dockview/DockviewLayout").then(
-      (m) => m.DockviewLayout,
-    ),
+  () => import("@/components/dockview/DockviewLayout").then((m) => m.DockviewLayout),
   { ssr: false },
 );
 
@@ -45,9 +44,7 @@ type StoredVersion = {
   storage_key: string;
 };
 
-async function downloadVersion(
-  version: StoredVersion,
-): Promise<FileSystemTree> {
+async function downloadVersion(version: StoredVersion): Promise<FileSystemTree> {
   const { data, error } = await createClient()
     .storage.from(version.storage_bucket)
     .download(version.storage_key);
@@ -55,10 +52,7 @@ async function downloadVersion(
   return JSON.parse(await data.text()) as FileSystemTree;
 }
 
-export function IdeWorkspace({
-  projectId,
-  projectName,
-}: IdeWorkspaceProps = {}) {
+export function IdeWorkspace({ projectId, projectName }: IdeWorkspaceProps = {}) {
   const status = useWebContainerStore((state) => state.status);
   const error = useWebContainerStore((state) => state.error);
   const mode = useThemeStore((state) => state.mode);
@@ -91,29 +85,23 @@ export function IdeWorkspace({
 
         let initialTree = mcpUseStarterTree;
         if (projectId) {
-          const { data: latestVersion, error: versionError } =
-            await createClient()
-              .from("project_versions")
-              .select("id, revision, storage_bucket, storage_key")
-              .eq("project_id", projectId)
-              .is("deleted_at", null)
-              .order("revision", { ascending: false })
-              .limit(1)
-              .maybeSingle();
+          const { data: latestVersion, error: versionError } = await createClient()
+            .from("project_versions")
+            .select("id, revision, storage_bucket, storage_key")
+            .eq("project_id", projectId)
+            .is("deleted_at", null)
+            .order("revision", { ascending: false })
+            .limit(1)
+            .maybeSingle();
           if (versionError) throw versionError;
 
           if (latestVersion) {
             initialTree = await downloadVersion(latestVersion as StoredVersion);
             useLogsStore
               .getState()
-              .append(
-                "lifecycle",
-                `Loaded project version ${latestVersion.revision}.\n`,
-              );
+              .append("lifecycle", `Loaded project version ${latestVersion.revision}.\n`);
           } else {
-            useLogsStore
-              .getState()
-              .append("lifecycle", "Loaded starter project.\n");
+            useLogsStore.getState().append("lifecycle", "Loaded starter project.\n");
           }
         }
 
@@ -168,10 +156,8 @@ export function IdeWorkspace({
       const instance = await getWebContainer();
       const tree = await exportFileSystem(instance);
       const supabase = createClient();
-      const { data: userData, error: userError } =
-        await supabase.auth.getUser();
-      if (userError || !userData.user)
-        throw new Error("You must be signed in to save a version.");
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) throw new Error("You must be signed in to save a version.");
       const { data: latest, error: latestError } = await supabase
         .from("project_versions")
         .select("revision")
@@ -190,12 +176,7 @@ export function IdeWorkspace({
         .upload(storageKey, archive, { contentType: "application/json" });
       if (uploadError) throw uploadError;
       const checksum = Array.from(
-        new Uint8Array(
-          await crypto.subtle.digest(
-            "SHA-256",
-            new TextEncoder().encode(contents),
-          ),
-        ),
+        new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(contents))),
         (byte) => byte.toString(16).padStart(2, "0"),
       ).join("");
       const { data: version, error: insertError } = await supabase
@@ -226,9 +207,7 @@ export function IdeWorkspace({
       if (projectError) throw projectError;
       useLogsStore.getState().append("lifecycle", "Project version saved.\n");
     } catch (err) {
-      useWebContainerStore
-        .getState()
-        .setError(err instanceof Error ? err.message : String(err));
+      useWebContainerStore.getState().setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
     }
@@ -253,13 +232,9 @@ export function IdeWorkspace({
       await instance.mount(tree);
       await restartDev(instance);
       window.history.replaceState({}, "", `/projects/${projectId}/workspace`);
-      useLogsStore
-        .getState()
-        .append("lifecycle", `Project version ${revision} restored.\n`);
+      useLogsStore.getState().append("lifecycle", `Project version ${revision} restored.\n`);
     } catch (err) {
-      useWebContainerStore
-        .getState()
-        .setError(err instanceof Error ? err.message : String(err));
+      useWebContainerStore.getState().setError(err instanceof Error ? err.message : String(err));
     } finally {
       setRestoring(false);
     }

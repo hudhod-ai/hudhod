@@ -1,19 +1,14 @@
 import "server-only";
-
 import { createClient } from "@supabase/supabase-js";
 
 import { env } from "@/server/env";
 
 export function createAdminClient() {
   if (!env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY is required for token-based archive downloads.",
-    );
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for token-based archive downloads.");
   }
 
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 }

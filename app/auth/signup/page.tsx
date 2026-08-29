@@ -15,9 +15,7 @@ export default async function SignupPage({
         className="w-full space-y-5 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm"
       >
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
-            mcpup
-          </p>
+          <p className="text-sm font-medium tracking-[0.2em] text-zinc-500 uppercase">mcpup</p>
           <h1 className="mt-2 text-3xl font-semibold">Create account</h1>
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}

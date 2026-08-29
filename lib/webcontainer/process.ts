@@ -1,6 +1,8 @@
 import type { WebContainer, WebContainerProcess } from "@webcontainer/api";
+
 import { useLogsStore } from "@/store/useLogsStore";
 import { useWebContainerStore } from "@/store/useWebContainerStore";
+
 import { createLineBuffer } from "./logLineBuffer";
 
 async function pipeOutputToLogs(
@@ -51,19 +53,14 @@ export async function restartDev(instance: WebContainer): Promise<void> {
 }
 
 /** Installs an npm package into the project, then restarts the dev server. */
-export async function addDependency(
-  instance: WebContainer,
-  packageName: string,
-): Promise<void> {
+export async function addDependency(instance: WebContainer, packageName: string): Promise<void> {
   const append = useLogsStore.getState().append;
   append("install", `$ npm install ${packageName}\n`);
   const installProcess = await instance.spawn("npm", ["install", packageName]);
   void pipeOutputToLogs(installProcess, "install");
   const exitCode = await installProcess.exit;
   if (exitCode !== 0) {
-    throw new Error(
-      `npm install ${packageName} failed with exit code ${exitCode}`,
-    );
+    throw new Error(`npm install ${packageName} failed with exit code ${exitCode}`);
   }
   await restartDev(instance);
 }

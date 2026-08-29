@@ -18,9 +18,7 @@ export default async function ProjectVersionPage({
     redirect("/projects");
   }
 
-  const version = await getVersion(id, Number(revision), auth.userId).catch(
-    () => null,
-  );
+  const version = await getVersion(id, Number(revision), auth.userId).catch(() => null);
   if (!version) {
     redirect(`/projects/${id}`);
   }
@@ -29,7 +27,7 @@ export default async function ProjectVersionPage({
     <main className="mx-auto max-w-4xl px-6 py-12">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
+          <p className="text-sm font-medium tracking-[0.2em] text-zinc-500 uppercase">
             Version details
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">
@@ -51,9 +49,7 @@ export default async function ProjectVersionPage({
         </div>
         <div>
           <p className="text-sm text-zinc-500">Checksum</p>
-          <p className="mt-1 break-all font-mono text-sm text-zinc-700">
-            {version.checksumSha256}
-          </p>
+          <p className="mt-1 font-mono text-sm break-all text-zinc-700">{version.checksumSha256}</p>
         </div>
         <div>
           <p className="text-sm text-zinc-500">Archive</p>
@@ -63,15 +59,11 @@ export default async function ProjectVersionPage({
         </div>
         <div>
           <p className="text-sm text-zinc-500">Deployment token</p>
-          <p className="mt-1 break-all font-mono text-sm text-zinc-700">
-            {version.downloadToken}
-          </p>
+          <p className="mt-1 font-mono text-sm break-all text-zinc-700">{version.downloadToken}</p>
         </div>
         <div>
           <p className="text-sm text-zinc-500">Created</p>
-          <p className="mt-1 text-zinc-700">
-            {new Date(version.createdAt).toLocaleString()}
-          </p>
+          <p className="mt-1 text-zinc-700">{new Date(version.createdAt).toLocaleString()}</p>
         </div>
       </div>
     </main>

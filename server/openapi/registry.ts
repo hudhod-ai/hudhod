@@ -1,10 +1,6 @@
-import {
-  OpenAPIRegistry,
-  OpenApiGeneratorV31,
-  extendZodWithOpenApi,
-} from "@asteasolutions/zod-to-openapi";
-import { z } from "zod";
+import { OpenAPIRegistry, OpenApiGeneratorV31 } from "@asteasolutions/zod-to-openapi";
 
+import { z } from "@/server/openapi/zod";
 import {
   createProjectSchema,
   idParamSchema,
@@ -15,8 +11,6 @@ import {
   projectVersionSchema,
   updateProjectSchema,
 } from "@/server/schemas/common";
-
-extendZodWithOpenApi(z);
 
 export const registry = new OpenAPIRegistry();
 
@@ -188,8 +182,7 @@ export function buildOpenApiDocument() {
     info: {
       title: "MCPup API",
       version: "1.0.0",
-      description:
-        "Project lifecycle and versioned filesystem snapshots for MCPup.",
+      description: "Project lifecycle and versioned filesystem snapshots for MCPup.",
     },
     servers: [{ url: "/api" }],
   });

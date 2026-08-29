@@ -1,8 +1,9 @@
 "use client";
 
 import "@xterm/xterm/css/xterm.css";
-import { useEffect, useRef } from "react";
 import type { WebContainerProcess } from "@webcontainer/api";
+import { useEffect, useRef } from "react";
+
 import { getWebContainer } from "@/lib/webcontainer/boot";
 
 export function Terminal() {

@@ -1,8 +1,8 @@
 "use client";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { MoreHorizontal, X } from "lucide-react";
 import type { IDockviewPanelHeaderProps } from "dockview-react";
+import { MoreHorizontal, X } from "lucide-react";
 
 // Hidden until this tab is hovered/active; each button opts back into full opacity on
 // its own :hover (opacity set on an ancestor can't be "undone" by a child's opacity).

@@ -8,9 +8,7 @@ export async function GET(request: Request) {
   const next = url.searchParams.get("next") ?? "/projects";
 
   if (code) {
-    const { error } = await (
-      await createClient()
-    ).auth.exchangeCodeForSession(code);
+    const { error } = await (await createClient()).auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(new URL(next, url.origin));
   }
 

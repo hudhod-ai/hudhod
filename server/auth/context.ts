@@ -1,5 +1,4 @@
 import "server-only";
-
 import { createClient } from "@/lib/server";
 import { UnauthorizedError } from "@/server/http/errors";
 

@@ -32,10 +32,7 @@ export function RootContextMenu({
             New Folder
           </ContextMenu.Item>
           <ContextMenu.Separator className="my-1 h-px bg-zinc-200 dark:bg-zinc-700" />
-          <ContextMenu.Item
-            className={menuItemClass}
-            onSelect={onAddDependency}
-          >
+          <ContextMenu.Item className={menuItemClass} onSelect={onAddDependency}>
             Add npm dependency…
           </ContextMenu.Item>
         </ContextMenu.Content>

@@ -13,12 +13,8 @@ export default async function ProjectsPage() {
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-12">
       <header className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
-            Projects
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            Project dashboard
-          </h1>
+          <p className="text-sm font-medium tracking-[0.2em] text-zinc-500 uppercase">Projects</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Project dashboard</h1>
         </div>
         <div className="flex items-center gap-3">
           <form action={signOutAction}>
@@ -38,9 +34,7 @@ export default async function ProjectsPage() {
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         {projects.length === 0 ? (
           <div className="space-y-3">
-            <p className="text-sm text-zinc-600">
-              You do not have any projects yet.
-            </p>
+            <p className="text-sm text-zinc-600">You do not have any projects yet.</p>
             <Link
               href="/projects/new"
               className="inline-flex rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700"
@@ -64,9 +58,7 @@ export default async function ProjectsPage() {
                   </Link>
                   <p className="mt-1 text-sm text-zinc-500">/{project.slug}</p>
                   {project.description ? (
-                    <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-                      {project.description}
-                    </p>
+                    <p className="mt-2 max-w-2xl text-sm text-zinc-600">{project.description}</p>
                   ) : null}
                 </div>
 

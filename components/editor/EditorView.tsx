@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+
 import { getWebContainer } from "@/lib/webcontainer/boot";
 import { writeTextFile } from "@/lib/webcontainer/filesystem";
 import { useFileSystemStore } from "@/store/useFileSystemStore";
 import { useThemeStore } from "@/store/useThemeStore";
+
 import { EditorTabs } from "./EditorTabs";
 import { MonacoEditor } from "./MonacoEditor";
 

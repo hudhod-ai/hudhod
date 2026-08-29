@@ -42,12 +42,7 @@ interface MonacoEditorProps {
   onChange: (value: string) => void;
 }
 
-export function MonacoEditor({
-  path,
-  value,
-  theme,
-  onChange,
-}: MonacoEditorProps) {
+export function MonacoEditor({ path, value, theme, onChange }: MonacoEditorProps) {
   return (
     <Editor
       key={path}

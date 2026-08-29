@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/server";
 import { createAdminClient } from "@/lib/admin";
+import { createClient } from "@/lib/server";
 import { calculateChecksum } from "@/server/archive";
 import { env } from "@/server/env";
 import { BadRequestError, NotFoundError } from "@/server/http/errors";
@@ -84,10 +84,7 @@ async function requireProject(projectId: string, ownerId: string) {
   if (error || !data) throw new NotFoundError("Project not found.");
 }
 
-export async function listVersionsForProject(
-  projectId: string,
-  ownerId: string,
-) {
+export async function listVersionsForProject(projectId: string, ownerId: string) {
   await requireProject(projectId, ownerId);
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -106,8 +103,7 @@ export async function createVersionForProject(
   input: VersionInput,
 ) {
   await requireProject(projectId, ownerId);
-  if (!input.archive.length)
-    throw new BadRequestError("Version archive is empty.");
+  if (!input.archive.length) throw new BadRequestError("Version archive is empty.");
 
   const supabase = await createClient();
   const { data: latest, error: latestError } = await supabase
@@ -141,9 +137,7 @@ export async function createVersionForProject(
       storage_bucket: storedArchive.bucket,
       content_type: storedArchive.contentType,
       size_bytes: storedArchive.sizeBytes,
-      checksum_sha256:
-        storedArchive.checksumSha256 ||
-        (await calculateChecksum(input.archive)),
+      checksum_sha256: storedArchive.checksumSha256 || (await calculateChecksum(input.archive)),
       file_count: 1,
       restored_from_version_id: input.restoreFromVersionId ?? null,
       created_by: ownerId,
@@ -167,11 +161,7 @@ export async function createVersionForProject(
   return version;
 }
 
-export async function getVersion(
-  projectId: string,
-  revision: number,
-  ownerId: string,
-) {
+export async function getVersion(projectId: string, revision: number, ownerId: string) {
   await requireProject(projectId, ownerId);
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -202,11 +192,7 @@ export async function getVersionForDownloadToken(
   return toProjectVersion(data as ProjectVersionRow);
 }
 
-export async function softDeleteVersion(
-  projectId: string,
-  revision: number,
-  ownerId: string,
-) {
+export async function softDeleteVersion(projectId: string, revision: number, ownerId: string) {
   const current = await getVersion(projectId, revision, ownerId);
   const supabase = await createClient();
   const { data, error } = await supabase

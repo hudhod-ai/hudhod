@@ -54,10 +54,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 999px;
-  background-color: var(
-    --dv-icon-hover-background-color,
-    rgba(140, 140, 140, 0.6)
-  );
+  background-color: var(--dv-icon-hover-background-color, rgba(140, 140, 140, 0.6));
   opacity: 0.14;
   transition:
     opacity 120ms ease,
@@ -84,10 +81,7 @@
   height: 3px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  background-color: var(
-    --dv-icon-hover-background-color,
-    rgba(140, 140, 140, 0.6)
-  );
+  background-color: var(--dv-icon-hover-background-color, rgba(140, 140, 140, 0.6));
   box-shadow:
     -8px 0 0 0 var(--dv-icon-hover-background-color, rgba(140, 140, 140, 0.6)),
     8px 0 0 0 var(--dv-icon-hover-background-color, rgba(140, 140, 140, 0.6));
@@ -104,10 +98,7 @@
   height: 3px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  background-color: var(
-    --dv-icon-hover-background-color,
-    rgba(140, 140, 140, 0.6)
-  );
+  background-color: var(--dv-icon-hover-background-color, rgba(140, 140, 140, 0.6));
   box-shadow:
     0 -8px 0 0 var(--dv-icon-hover-background-color, rgba(140, 140, 140, 0.6)),
     0 8px 0 0 var(--dv-icon-hover-background-color, rgba(140, 140, 140, 0.6));

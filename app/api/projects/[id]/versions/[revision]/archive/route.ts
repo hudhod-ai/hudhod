@@ -3,10 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/admin";
 import { getAuthContext } from "@/server/auth/context";
 import { NotFoundError, toProblemResponse } from "@/server/http/errors";
-import {
-  getVersion,
-  getVersionForDownloadToken,
-} from "@/server/services/versions.service";
+import { getVersion, getVersionForDownloadToken } from "@/server/services/versions.service";
 import { getStorageProvider } from "@/server/storage";
 
 export async function GET(
@@ -15,15 +12,11 @@ export async function GET(
 ) {
   try {
     const { id, revision } = await params;
-    const token = request.headers
-      .get("authorization")
-      ?.match(/^Bearer\s+(.+)$/i)?.[1];
+    const token = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
     const version = token
       ? await getVersionForDownloadToken(id, Number(revision), token)
       : await getVersion(id, Number(revision), (await getAuthContext()).userId);
-    const storage = await getStorageProvider(
-      token ? createAdminClient() : undefined,
-    );
+    const storage = await getStorageProvider(token ? createAdminClient() : undefined);
 
     if (
       !(await storage.exists({

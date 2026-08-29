@@ -2,8 +2,8 @@ import { CSI_RESET_FINAL_CHARS, CSI_TOKEN_PATTERN } from "./ansi";
 
 // Splits a chunk into either a full ANSI escape sequence or a single plain character,
 // so escape codes can be interpreted (not just deleted) before the rest is discarded.
-// eslint-disable-next-line no-control-regex
 const TOKEN_PATTERN =
+  // oxlint-disable-next-line no-control-regex
   /\u001B\[[0-9;]*[A-Za-z]|\u001B\][\s\S]*?(?:\u0007|\u001B\\)|[\s\S]/g;
 
 /**

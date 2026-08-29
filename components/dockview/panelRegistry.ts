@@ -62,9 +62,7 @@ export const PANEL_DEFINITIONS: PanelDefinition[] = [
 ];
 
 /** Reference-panel widths only apply the first time a panel is added. */
-const INITIAL_SIZE: Partial<
-  Record<PanelId, { initialWidth?: number; initialHeight?: number }>
-> = {
+const INITIAL_SIZE: Partial<Record<PanelId, { initialWidth?: number; initialHeight?: number }>> = {
   explorer: { initialWidth: 260 },
   preview: { initialWidth: 420 },
   logs: { initialHeight: 220 },
@@ -106,8 +104,12 @@ export function closePanel(api: DockviewApi, id: PanelId) {
 }
 
 export function resetLayout(api: DockviewApi) {
-  for (const panel of [...api.panels]) {
+  // Snapshot first: removePanel mutates the live api.panels collection.
+  const panels = Array.from(api.panels);
+
+  for (const panel of panels) {
     api.removePanel(panel);
   }
+
   buildInitialLayout(api);
 }

@@ -45,29 +45,21 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
     const { tabs, activePath } = get();
     const remaining = tabs.filter((tab) => tab.path !== path);
     const nextActive =
-      activePath === path
-        ? (remaining[remaining.length - 1]?.path ?? null)
-        : activePath;
+      activePath === path ? (remaining[remaining.length - 1]?.path ?? null) : activePath;
     set({ tabs: remaining, activePath: nextActive });
   },
   setActivePath: (activePath) => set({ activePath }),
   updateContent: (path, content) =>
     set((state) => ({
-      tabs: state.tabs.map((tab) =>
-        tab.path === path ? { ...tab, content, dirty: true } : tab,
-      ),
+      tabs: state.tabs.map((tab) => (tab.path === path ? { ...tab, content, dirty: true } : tab)),
     })),
   markSaved: (path) =>
     set((state) => ({
-      tabs: state.tabs.map((tab) =>
-        tab.path === path ? { ...tab, dirty: false } : tab,
-      ),
+      tabs: state.tabs.map((tab) => (tab.path === path ? { ...tab, dirty: false } : tab)),
     })),
   renameOpenTab: (oldPath, newPath) =>
     set((state) => ({
-      tabs: state.tabs.map((tab) =>
-        tab.path === oldPath ? { ...tab, path: newPath } : tab,
-      ),
+      tabs: state.tabs.map((tab) => (tab.path === oldPath ? { ...tab, path: newPath } : tab)),
       activePath: state.activePath === oldPath ? newPath : state.activePath,
     })),
   removeOpenTabsUnderPath: (path) =>
@@ -75,9 +67,7 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
       const remaining = state.tabs.filter(
         (tab) => tab.path !== path && !tab.path.startsWith(`${path}/`),
       );
-      const activeStillOpen = remaining.some(
-        (tab) => tab.path === state.activePath,
-      );
+      const activeStillOpen = remaining.some((tab) => tab.path === state.activePath);
       return {
         tabs: remaining,
         activePath: activeStillOpen

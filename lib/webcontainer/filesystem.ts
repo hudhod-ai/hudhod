@@ -1,15 +1,10 @@
 import type { FileSystemTree, WebContainer } from "@webcontainer/api";
-import {
-  useFileSystemStore,
-  type FileTreeNode,
-} from "@/store/useFileSystemStore";
+
+import { useFileSystemStore, type FileTreeNode } from "@/store/useFileSystemStore";
 
 const IGNORED_DIRECTORIES = new Set(["node_modules", ".git", "dist"]);
 
-async function readDirectory(
-  instance: WebContainer,
-  path: string,
-): Promise<FileTreeNode[]> {
+async function readDirectory(instance: WebContainer, path: string): Promise<FileTreeNode[]> {
   const entries = await instance.fs.readdir(path, { withFileTypes: true });
 
   const nodes = await Promise.all(
@@ -41,10 +36,7 @@ export async function refreshTree(instance: WebContainer): Promise<void> {
   useFileSystemStore.getState().setTree(tree);
 }
 
-export async function readTextFile(
-  instance: WebContainer,
-  path: string,
-): Promise<string> {
+export async function readTextFile(instance: WebContainer, path: string): Promise<string> {
   return instance.fs.readFile(path, "utf-8");
 }
 
@@ -69,10 +61,7 @@ export async function createEntry(
   await refreshTree(instance);
 }
 
-export async function deleteEntry(
-  instance: WebContainer,
-  path: string,
-): Promise<void> {
+export async function deleteEntry(instance: WebContainer, path: string): Promise<void> {
   await instance.fs.rm(path, { recursive: true, force: true });
   useFileSystemStore.getState().removeOpenTabsUnderPath(path);
   await refreshTree(instance);
@@ -95,9 +84,11 @@ export async function exportFileSystem(
 ): Promise<FileSystemTree> {
   return instance.export(path, {
     format: "json",
-    excludes: [...IGNORED_DIRECTORIES, ".mcp-use", "package-lock.json"].flatMap(
-      (entry) => [entry, `**/${entry}`, `**/${entry}/**`],
-    ),
+    excludes: [...IGNORED_DIRECTORIES, ".mcp-use", "package-lock.json"].flatMap((entry) => [
+      entry,
+      `**/${entry}`,
+      `**/${entry}/**`,
+    ]),
   });
 }
 

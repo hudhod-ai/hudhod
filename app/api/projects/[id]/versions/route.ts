@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthContext } from "@/server/auth/context";
+import { toProblemResponse } from "@/server/http/errors";
 import { createProjectVersionSchema } from "@/server/schemas/common";
 import {
   createVersionForProject,
   listVersionsForProject,
 } from "@/server/services/versions.service";
-import { toProblemResponse } from "@/server/http/errors";
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await getAuthContext();
     const { id } = await params;
@@ -23,18 +20,13 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await getAuthContext();
     const { id } = await params;
     const formData = await request.formData();
     const file = formData.get("file");
-    const fields = createProjectVersionSchema.parse(
-      Object.fromEntries(formData.entries()),
-    );
+    const fields = createProjectVersionSchema.parse(Object.fromEntries(formData.entries()));
 
     if (!(file instanceof File)) {
       throw new Error("Missing file upload.");

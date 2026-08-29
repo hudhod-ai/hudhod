@@ -1,13 +1,12 @@
 import { createHash } from "node:crypto";
 import { PassThrough, Readable } from "node:stream";
 import { createGzip } from "node:zlib";
+
 import tar from "tar-stream";
 
 export type ProjectFileMap = Record<string, string>;
 
-export async function createProjectArchive(
-  files: ProjectFileMap,
-): Promise<Buffer> {
+export async function createProjectArchive(files: ProjectFileMap): Promise<Buffer> {
   const pack = tar.pack();
   const chunks: Buffer[] = [];
   const output = new PassThrough();

@@ -1,10 +1,6 @@
 import { createClient } from "@/lib/server";
 import { mcpUseStarterTree } from "@/lib/templates/mcpuse-starter";
-import {
-  BadRequestError,
-  ConflictError,
-  NotFoundError,
-} from "@/server/http/errors";
+import { BadRequestError, ConflictError, NotFoundError } from "@/server/http/errors";
 import { createVersionForProject } from "@/server/services/versions.service";
 
 export type ProjectInsert = {
@@ -99,20 +95,15 @@ export async function createProject(input: ProjectInsert) {
     .select()
     .single();
   if (error) {
-    if (error.code === "23505")
-      throw new ConflictError("A project with this slug already exists.");
+    if (error.code === "23505") throw new ConflictError("A project with this slug already exists.");
     throw error;
   }
   const project = toProject(data as ProjectRow);
-  const starterVersion = await createVersionForProject(
-    project.id,
-    input.ownerId,
-    {
-      label: "Initial starter",
-      archive: Buffer.from(JSON.stringify(mcpUseStarterTree)),
-      contentType: "application/json",
-    },
-  );
+  const starterVersion = await createVersionForProject(project.id, input.ownerId, {
+    label: "Initial starter",
+    archive: Buffer.from(JSON.stringify(mcpUseStarterTree)),
+    contentType: "application/json",
+  });
 
   return { ...project, currentVersionId: starterVersion.id };
 }

@@ -27,15 +27,27 @@ export function EditorTabs() {
   if (tabs.length === 0) return null;
 
   return (
-    <div className="flex h-8 shrink-0 items-stretch overflow-x-auto border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+    <div
+      role="tablist"
+      className="flex h-8 shrink-0 items-stretch overflow-x-auto border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900"
+    >
       {tabs.map((tab) => {
         const name = tab.path.split("/").pop();
         const isActive = tab.path === activePath;
         return (
           <div
             key={tab.path}
+            role="tab"
+            tabIndex={0}
+            aria-selected={isActive}
             onClick={() => setActivePath(tab.path)}
-            className={`group flex cursor-pointer items-center gap-1.5 border-r border-zinc-200 pl-3 pr-2 text-xs dark:border-zinc-700 ${
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setActivePath(tab.path);
+              }
+            }}
+            className={`group flex cursor-pointer items-center gap-1.5 border-r border-zinc-200 pr-2 pl-3 text-xs dark:border-zinc-700 ${
               isActive
                 ? "bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100"
                 : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"

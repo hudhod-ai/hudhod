@@ -27,15 +27,11 @@ export const useLogsStore = create<LogsState>((set) => ({
   pending: {},
   append: (source, text) =>
     set((state) => {
-      const next = [
-        ...state.lines,
-        { id: nextId++, source, text, timestamp: Date.now() },
-      ];
+      const next = [...state.lines, { id: nextId++, source, text, timestamp: Date.now() }];
       return {
         lines: next.length > MAX_LOG_LINES ? next.slice(-MAX_LOG_LINES) : next,
       };
     }),
-  setPending: (source, text) =>
-    set((state) => ({ pending: { ...state.pending, [source]: text } })),
+  setPending: (source, text) => set((state) => ({ pending: { ...state.pending, [source]: text } })),
   clear: () => set({ lines: [], pending: {} }),
 }));

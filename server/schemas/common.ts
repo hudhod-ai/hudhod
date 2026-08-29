@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/server/openapi/zod";
 
 export const problemSchema = z.object({
   type: z.string(),

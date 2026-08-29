@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import type { DockviewApi } from "dockview-react";
+import { create } from "zustand";
 
 interface DockviewState {
   api: DockviewApi | null;

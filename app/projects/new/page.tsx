@@ -1,16 +1,13 @@
 import Link from "next/link";
+
 import { createProjectAction } from "@/app/projects/actions";
 
 export default function NewProjectPage() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <div className="mb-8">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
-          New project
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-          Create a project
-        </h1>
+        <p className="text-sm font-medium tracking-[0.2em] text-zinc-500 uppercase">New project</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">Create a project</h1>
       </div>
 
       <form
@@ -18,25 +15,19 @@ export default function NewProjectPage() {
         className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm"
       >
         <div className="space-y-2">
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-zinc-700"
-          >
+          <label htmlFor="name" className="block text-sm font-medium text-zinc-700">
             Project name
           </label>
           <input
             id="name"
             name="name"
             required
-            className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 outline-none ring-0 transition focus:border-zinc-400"
+            className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 ring-0 transition outline-none focus:border-zinc-400"
           />
         </div>
 
         <div className="space-y-2">
-          <label
-            htmlFor="slug"
-            className="block text-sm font-medium text-zinc-700"
-          >
+          <label htmlFor="slug" className="block text-sm font-medium text-zinc-700">
             Slug
           </label>
           <input
@@ -45,22 +36,19 @@ export default function NewProjectPage() {
             required
             pattern="^[a-z0-9-]+$"
             placeholder="my-cool-project"
-            className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 outline-none ring-0 transition focus:border-zinc-400"
+            className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 ring-0 transition outline-none focus:border-zinc-400"
           />
         </div>
 
         <div className="space-y-2">
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-zinc-700"
-          >
+          <label htmlFor="description" className="block text-sm font-medium text-zinc-700">
             Description
           </label>
           <textarea
             id="description"
             name="description"
             rows={5}
-            className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 outline-none transition focus:border-zinc-400"
+            className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 transition outline-none focus:border-zinc-400"
           />
         </div>
 

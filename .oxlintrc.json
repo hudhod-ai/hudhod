@@ -1,0 +1,60 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "react", "nextjs", "jsx-a11y", "import"],
+
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "node": true,
+    "es2024": true
+  },
+
+  "ignorePatterns": [
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "drizzle/**",
+    "supabase/**",
+    "public/**"
+  ],
+
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-console": "off",
+    "no-await-in-loop": "off",
+
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-asserted-optional-chain": "error",
+
+    "react/react-in-jsx-scope": "off",
+    "react/no-unknown-property": "off",
+    "react/jsx-no-target-blank": "off",
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn",
+
+    "import/no-anonymous-default-export": "warn",
+    "import/no-unassigned-import": "off",
+
+    "unicorn/filename-case": "off",
+    "unicorn/no-null": "off",
+    "unicorn/consistent-function-scoping": "off",
+
+    "jsx-a11y/alt-text": ["warn", { "elements": ["img"], "img": ["Image"] }],
+    "jsx-a11y/no-autofocus": "off"
+  },
+
+  "overrides": [
+    {
+      "files": ["docker/bootstrap/**/*.mjs"],
+      "env": { "browser": false, "node": true }
+    }
+  ]
+}

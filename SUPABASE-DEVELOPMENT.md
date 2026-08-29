@@ -1,6 +1,8 @@
-# Development Workflow
+# Supabase Development Workflow
 
 This project uses Supabase for Auth, Postgres, Row Level Security (RLS), and private Storage. Database and policy changes are stored as SQL migrations in `supabase/migrations/` and applied consistently to local and hosted Supabase projects.
+
+For linting, formatting, and general code style, see the README.
 
 ## Environment Model
 
@@ -101,7 +103,8 @@ Run code validation:
 
 ```bash
 pnpm lint
-pnpm exec tsc --noEmit
+pnpm fmt:check
+pnpm typecheck
 ```
 
 Use Studio to inspect data, policies, Storage objects, and Auth users. Use Mailpit to inspect local password-reset and confirmation emails.

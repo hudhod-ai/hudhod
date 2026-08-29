@@ -61,9 +61,7 @@ const timeoutMs = Number(MCPUP_FETCH_TIMEOUT) * 1000;
 const archiveUrl = `${MCPUP_API_URL.replace(/\/$/, "")}/api/projects/${MCPUP_PROJECT_ID}/versions/${MCPUP_REVISION}/archive`;
 
 async function download() {
-  const headers = MCPUP_API_TOKEN
-    ? { Authorization: `Bearer ${MCPUP_API_TOKEN}` }
-    : undefined;
+  const headers = MCPUP_API_TOKEN ? { Authorization: `Bearer ${MCPUP_API_TOKEN}` } : undefined;
 
   let lastError;
   for (let attempt = 0; attempt <= retries; attempt += 1) {
@@ -80,9 +78,7 @@ async function download() {
         const body = await response.text().catch(() => "");
         // 4xx will not fix itself on retry.
         if (response.status < 500) {
-          fail(
-            `Server returned ${response.status} for ${archiveUrl}. ${body.slice(0, 300)}`,
-          );
+          fail(`Server returned ${response.status} for ${archiveUrl}. ${body.slice(0, 300)}`);
         }
         throw new Error(`HTTP ${response.status}. ${body.slice(0, 300)}`);
       }
@@ -101,9 +97,7 @@ function toTree(archive) {
   try {
     tree = JSON.parse(archive);
   } catch (error) {
-    fail(
-      `Archive is not a JSON file tree: ${error.message} First bytes: ${archive.slice(0, 200)}`,
-    );
+    fail(`Archive is not a JSON file tree: ${error.message} First bytes: ${archive.slice(0, 200)}`);
   }
 
   if (!tree || typeof tree !== "object") {

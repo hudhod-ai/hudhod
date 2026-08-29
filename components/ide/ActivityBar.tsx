@@ -1,11 +1,9 @@
 "use client";
 
-import { useDockviewStore } from "@/store/useDockviewStore";
-import {
-  openOrFocusPanel,
-  type PanelId,
-} from "@/components/dockview/panelRegistry";
+import { openOrFocusPanel, type PanelId } from "@/components/dockview/panelRegistry";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { useDockviewStore } from "@/store/useDockviewStore";
+
 import { ExplorerIcon, LogsIcon, PreviewIcon, TerminalIcon } from "./icons";
 
 const ACTIVITY_ITEMS: {

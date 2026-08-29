@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+
 import { useLogsStore, type LogSource } from "@/store/useLogsStore";
 
 const SOURCE_COLOR: Record<LogSource, string> = {
@@ -15,8 +16,8 @@ export function LogsView() {
   const pending = useLogsStore((state) => state.pending);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const pendingEntries = Object.entries(pending).filter(
-    (entry): entry is [LogSource, string] => Boolean(entry[1]),
+  const pendingEntries = Object.entries(pending).filter((entry): entry is [LogSource, string] =>
+    Boolean(entry[1]),
   );
 
   useEffect(() => {
@@ -32,19 +33,12 @@ export function LogsView() {
     >
       {lines.map((line) => (
         <div key={line.id} className={SOURCE_COLOR[line.source]}>
-          <span className="text-zinc-400 dark:text-zinc-600">
-            [{line.source}]
-          </span>{" "}
-          {line.text}
+          <span className="text-zinc-400 dark:text-zinc-600">[{line.source}]</span> {line.text}
         </div>
       ))}
       {pendingEntries.map(([source, text]) => (
-        <div
-          key={`pending-${source}`}
-          className={`${SOURCE_COLOR[source]} opacity-60`}
-        >
-          <span className="text-zinc-400 dark:text-zinc-600">[{source}]</span>{" "}
-          {text}
+        <div key={`pending-${source}`} className={`${SOURCE_COLOR[source]} opacity-60`}>
+          <span className="text-zinc-400 dark:text-zinc-600">[{source}]</span> {text}
           <span className="animate-pulse">▍</span>
         </div>
       ))}

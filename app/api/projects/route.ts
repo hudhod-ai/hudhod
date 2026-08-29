@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import {
-  createProject,
-  listProjectsForOwner,
-} from "@/server/services/projects.service";
 import { getAuthContext } from "@/server/auth/context";
-import { createProjectSchema } from "@/server/schemas/common";
 import { toProblemResponse } from "@/server/http/errors";
+import { createProjectSchema } from "@/server/schemas/common";
+import { createProject, listProjectsForOwner } from "@/server/services/projects.service";
 
 export async function GET() {
   try {

@@ -1,14 +1,11 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { getAuthContext } from "@/server/auth/context";
-import {
-  createProject,
-  softDeleteProject,
-} from "@/server/services/projects.service";
 import { createProjectSchema } from "@/server/schemas/common";
+import { createProject, softDeleteProject } from "@/server/services/projects.service";
 
 export async function createProjectAction(formData: FormData) {
   const auth = await getAuthContext();

@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import type { WebContainerProcess } from "@webcontainer/api";
+import { create } from "zustand";
 
 export type WebContainerStatus =
   | "idle"

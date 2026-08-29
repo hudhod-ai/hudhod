@@ -18,6 +18,32 @@ Schema, RLS policies, Storage bucket configuration, and Auth profile trigger liv
 pnpm supabase:db:push
 ```
 
+See [SUPABASE-DEVELOPMENT.md](SUPABASE-DEVELOPMENT.md) for the full migration, RLS testing, and deployment workflow.
+
+## Linting and formatting
+
+This project uses the [Oxc](https://oxc.rs) toolchain. ESLint and Prettier are not used.
+
+| Command          | Purpose                           |
+| ---------------- | --------------------------------- |
+| `pnpm lint`      | Run `oxlint`                      |
+| `pnpm lint:fix`  | Apply `oxlint` auto-fixes         |
+| `pnpm fmt`       | Format in place with `oxfmt`      |
+| `pnpm fmt:check` | Verify formatting without writing |
+| `pnpm typecheck` | Type-check with `tsc --noEmit`    |
+
+`oxlint` is configured in `.oxlintrc.json` with the `eslint`, `typescript`, `unicorn`, `oxc`, `react`, `nextjs`, `jsx-a11y`, and `import` plugins enabled. The `nextjs` plugin replaces the rules previously provided by `eslint-config-next`.
+
+`oxfmt` is configured in `.oxfmtrc.json`. Beyond Prettier-compatible formatting it also:
+
+- sorts imports into `builtin → external → @/internal → relative` groups, separated by blank lines
+- sorts Tailwind class names in `className` and in `cn` / `clsx` / `cva` calls, using `app/globals.css` as the Tailwind v4 source
+- sorts `package.json` keys
+
+Do not reorder imports or Tailwind classes by hand; `oxfmt` owns both. Blank lines between logical blocks are preserved, so keep them where they aid readability.
+
+Install the `oxc.oxc-vscode` extension for format-on-save and inline diagnostics. It is already listed in `.vscode/extensions.json`.
+
 ## Environments
 
 Each development, test/UAT, and production environment should have a separate Supabase project. To move the schema to another project, authenticate with the Supabase CLI, then run:

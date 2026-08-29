@@ -5,11 +5,7 @@ import { getAuthContext } from "@/server/auth/context";
 import { getProjectById } from "@/server/services/projects.service";
 import { listVersionsForProject } from "@/server/services/versions.service";
 
-export default async function ProjectDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const auth = await getAuthContext();
   const { id } = await params;
 
@@ -24,12 +20,8 @@ export default async function ProjectDetailPage({
     <main className="mx-auto max-w-6xl px-6 py-12">
       <div className="mb-8 flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
-            Project
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            {project.name}
-          </h1>
+          <p className="text-sm font-medium tracking-[0.2em] text-zinc-500 uppercase">Project</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">{project.name}</h1>
         </div>
         <div className="flex gap-3">
           <Link
@@ -53,9 +45,7 @@ export default async function ProjectDetailPage({
         {project.description ? (
           <>
             <p className="mt-6 text-sm text-zinc-500">Description</p>
-            <p className="mt-2 whitespace-pre-wrap text-zinc-700">
-              {project.description}
-            </p>
+            <p className="mt-2 whitespace-pre-wrap text-zinc-700">{project.description}</p>
           </>
         ) : null}
       </section>
@@ -85,8 +75,7 @@ export default async function ProjectDetailPage({
                     {version.label ?? `v${version.revision}`}
                   </p>
                   <p className="text-sm text-zinc-500">
-                    Revision {version.revision} •{" "}
-                    {new Date(version.createdAt).toLocaleString()}
+                    Revision {version.revision} • {new Date(version.createdAt).toLocaleString()}
                   </p>
                 </div>
                 <div className="flex gap-2">
