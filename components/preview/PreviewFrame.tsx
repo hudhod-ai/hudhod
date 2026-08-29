@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useWebContainerStore } from "@/store/useWebContainerStore";
+import { useThemeStore } from "@/store/useThemeStore";
 
 function ReloadIcon() {
   return (
@@ -72,10 +73,17 @@ function CollapseIcon() {
 }
 
 export function PreviewFrame() {
+  const mode = useThemeStore((state) => state.mode);
   const previewUrl = useWebContainerStore((state) => state.previewUrl);
 
+  const inspectorUrl = previewUrl
+    ? `${previewUrl}/mcp/inspector?theme=${mode}`
+    : null;
+
+  console.log("previewUrl:", previewUrl, "inspectorUrl:", inspectorUrl);
+
   // Remount on previewUrl change so address/path state resets without an effect.
-  return <BrowserFrame key={previewUrl ?? "none"} previewUrl={previewUrl} />;
+  return <BrowserFrame key={previewUrl ?? "none"} previewUrl={inspectorUrl} />;
 }
 
 function BrowserFrame({ previewUrl }: { previewUrl: string | null }) {
@@ -118,6 +126,8 @@ function BrowserFrame({ previewUrl }: { previewUrl: string | null }) {
   }
 
   const fullUrl = previewUrl ? `${previewUrl}${path}` : null;
+
+  console.log("fullUrl:", fullUrl);
 
   return (
     <div className="flex h-full flex-col bg-zinc-200 dark:bg-zinc-900">

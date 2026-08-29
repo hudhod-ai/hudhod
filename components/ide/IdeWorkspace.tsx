@@ -1,10 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { FileSystemTree } from "@webcontainer/api";
 import { getWebContainer } from "@/lib/webcontainer/boot";
 import { attachWebContainerEvents } from "@/lib/webcontainer/events";
-import { mountAndIndex } from "@/lib/webcontainer/filesystem";
+import { mountAndIndex, exportFileSystem } from "@/lib/webcontainer/filesystem";
 import { runInstall, runDev, restartDev } from "@/lib/webcontainer/process";
 import { mcpUseStarterTree } from "@/lib/templates/mcpuse-starter";
 import { useWebContainerStore } from "@/store/useWebContainerStore";
@@ -31,7 +32,15 @@ const STATUS_LABEL: Record<string, string> = {
   error: "Error",
 };
 
-export function IdeWorkspace() {
+type IdeWorkspaceProps = {
+  projectId?: string;
+  projectName?: string;
+};
+
+export function IdeWorkspace({
+  projectId,
+  projectName,
+}: IdeWorkspaceProps = {}) {
   const status = useWebContainerStore((state) => state.status);
   const error = useWebContainerStore((state) => state.error);
   const mode = useThemeStore((state) => state.mode);
@@ -39,6 +48,9 @@ export function IdeWorkspace() {
   const dockviewApi = useDockviewStore((state) => state.api);
   const bootstrapped = useRef(false);
   const [restarting, setRestarting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [restoring, setRestoring] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", mode === "dark");
@@ -84,14 +96,100 @@ export function IdeWorkspace() {
     }
   }
 
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const instance = await getWebContainer();
+      const tree = await exportFileSystem(instance);
+      const blob = new Blob([JSON.stringify(tree, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${projectName ?? "project"}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleSaveVersion() {
+    if (!projectId) return;
+    setSaving(true);
+    try {
+      const instance = await getWebContainer();
+      const tree = await exportFileSystem(instance);
+      const formData = new FormData();
+      formData.append(
+        "file",
+        new File([JSON.stringify(tree)], `${projectName ?? "project"}.json`, {
+          type: "application/json",
+        }),
+      );
+      formData.append("label", `Saved ${new Date().toLocaleString()}`);
+      const response = await fetch(`/api/projects/${projectId}/versions`, {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Could not save project version.");
+      useLogsStore.getState().append("lifecycle", "Project version saved.\n");
+    } catch (err) {
+      useWebContainerStore
+        .getState()
+        .setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const handleRestoreVersion = useCallback(async () => {
+    if (!projectId) return;
+    const revision = new URLSearchParams(window.location.search).get("restore");
+    if (!revision) return;
+    setRestoring(true);
+    try {
+      const response = await fetch(
+        `/api/projects/${projectId}/versions/${revision}/archive`,
+      );
+      if (!response.ok) throw new Error("Could not download project version.");
+      const tree = (await response.json()) as FileSystemTree;
+      const instance = await getWebContainer();
+      await instance.mount(tree);
+      await restartDev(instance);
+      window.history.replaceState({}, "", `/projects/${projectId}/workspace`);
+      useLogsStore
+        .getState()
+        .append("lifecycle", `Project version ${revision} restored.\n`);
+    } catch (err) {
+      useWebContainerStore
+        .getState()
+        .setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRestoring(false);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    const restore = window.setTimeout(() => void handleRestoreVersion(), 0);
+    return () => window.clearTimeout(restore);
+  }, [handleRestoreVersion, projectId]);
+
   return (
     <TooltipProvider>
       <div className="flex h-screen w-full flex-col bg-white text-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
         <header className="flex h-9 shrink-0 items-center justify-between bg-[#eaeef2] px-3 dark:bg-[#0d1117]">
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-medium text-zinc-700 dark:text-zinc-200">
-              In-Browser IDE
+              {projectName ? `Project: ${projectName}` : "In-Browser IDE"}
             </span>
+            {projectId ? (
+              <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                {projectId.slice(0, 8)}
+              </span>
+            ) : null}
             <span
               className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
                 status === "error"
@@ -113,6 +211,24 @@ export function IdeWorkspace() {
             >
               Restart Dev Server
             </button>
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={exporting}
+              className="rounded px-2 py-1 text-[12px] text-zinc-600 hover:bg-zinc-200/60 disabled:opacity-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              Export Files
+            </button>
+            {projectId ? (
+              <button
+                type="button"
+                onClick={handleSaveVersion}
+                disabled={saving || restoring}
+                className="rounded px-2 py-1 text-[12px] text-zinc-600 hover:bg-zinc-200/60 disabled:opacity-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                {saving ? "Saving…" : "Save Version"}
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={() => dockviewApi && resetLayout(dockviewApi)}

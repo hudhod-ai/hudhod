@@ -1,4 +1,4 @@
-import type { WebContainer } from "@webcontainer/api";
+import type { FileSystemTree, WebContainer } from "@webcontainer/api";
 import {
   useFileSystemStore,
   type FileTreeNode,
@@ -86,6 +86,19 @@ export async function renameEntry(
   await instance.fs.rename(oldPath, newPath);
   useFileSystemStore.getState().renameOpenTab(oldPath, newPath);
   await refreshTree(instance);
+}
+
+/** Returns a FileSystemTree so the snapshot stays readable outside WebContainer. */
+export async function exportFileSystem(
+  instance: WebContainer,
+  path = instance.workdir,
+): Promise<FileSystemTree> {
+  return instance.export(path, {
+    format: "json",
+    excludes: [...IGNORED_DIRECTORIES, ".mcp-use", "package-lock.json"].flatMap(
+      (entry) => [entry, `**/${entry}`, `**/${entry}/**`],
+    ),
+  });
 }
 
 export async function mountAndIndex(

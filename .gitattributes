@@ -1,0 +1,14 @@
+* text=auto eol=lf
+
+*.sh text eol=lf
+Dockerfile text eol=lf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.tar.gz binary
+
+pnpm-lock.yaml linguist-generated=true

@@ -1,5 +1,6 @@
-import { IdeWorkspace } from "@/components/ide/IdeWorkspace";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <IdeWorkspace />;
+  redirect("/projects");
+  return null;
 }
