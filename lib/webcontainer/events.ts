@@ -1,25 +1,35 @@
 import type { WebContainer } from "@webcontainer/api";
 
-import { useLogsStore } from "@/store/useLogsStore";
-import { useWebContainerStore } from "@/store/useWebContainerStore";
+/** The events the workbench needs from its WebContainer runtime. */
+export interface WebContainerUiHandlers {
+  /** Reports a runtime error. */
+  onError(error: { message: string }): void;
+  /** Adds a lifecycle line to the host's log surface. */
+  onLifecycleLog(message: string): void;
+  /** Publishes a server preview URL. */
+  onPreview(url: string, port: number): void;
+  /** Updates the host's runtime status projection. */
+  onStatusChange(status: "running"): void;
+}
 
-/** Wires WebContainer lifecycle events into the logs/status stores. Returns an unsubscribe fn. */
-export function attachWebContainerEvents(instance: WebContainer): () => void {
-  const append = useLogsStore.getState().append;
+/** Wires WebContainer lifecycle events into callbacks supplied by the workbench. */
+export function attachWebContainerEvents(
+  instance: WebContainer,
+  handlers: WebContainerUiHandlers,
+): () => void {
 
   const unsubscribeServerReady = instance.on("server-ready", (port, url) => {
-    append("lifecycle", `Server ready on port ${port}: ${url}\n`);
-    useWebContainerStore.getState().setPreview(url, port);
-    useWebContainerStore.getState().setStatus("running");
+    handlers.onLifecycleLog(`Server ready on port ${port}: ${url}\n`);
+    handlers.onPreview(url, port);
+    handlers.onStatusChange("running");
   });
 
   const unsubscribeError = instance.on("error", (error) => {
-    append("error", `${error.message}\n`);
-    useWebContainerStore.getState().setError(error.message);
+    handlers.onError(error);
   });
 
   const unsubscribePort = instance.on("port", (port, type, url) => {
-    append("lifecycle", `Port ${port} ${type}: ${url}\n`);
+    handlers.onLifecycleLog(`Port ${port} ${type}: ${url}\n`);
   });
 
   return () => {

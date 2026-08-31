@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 
 import { useColorMode } from "@/hooks/useColorMode";
+import { getHudhodWorkspace } from "@/lib/hudhod/workspace";
 import { getWebContainer } from "@/lib/webcontainer/boot";
-import { writeTextFile } from "@/lib/webcontainer/filesystem";
 import { useFileSystemStore } from "@/store/useFileSystemStore";
 
 import { EditorTabs } from "./EditorTabs";
@@ -40,7 +40,7 @@ export function EditorView() {
       path,
       setTimeout(async () => {
         const instance = await getWebContainer();
-        await writeTextFile(instance, path, content);
+        await getHudhodWorkspace(instance).fs.writeTextFile(path, content);
         markSaved(path);
         timers.delete(path);
       }, SAVE_DEBOUNCE_MS),

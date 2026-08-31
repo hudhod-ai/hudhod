@@ -1,5 +1,5 @@
 {
-  "name": "new-mcpup",
+  "name": "hudhod",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,17 +11,24 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "packages:build": "pnpm --filter \"./packages/*\" run build",
+    "changeset": "changeset",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:db:push": "supabase db push",
     "supabase:migration:new": "supabase migration new",
     "supabase:types": "supabase gen types typescript --linked",
-    "bootstrap:build": "docker build -t osamanj93/mcpup-bootstrap:dev ./docker/bootstrap",
-    "bootstrap:publish": "docker buildx build --platform linux/amd64,linux/arm64 -t osamanj93/mcpup-bootstrap:latest --push ./docker/bootstrap"
+    "bootstrap:build": "docker build -t osamanj93/hudhod-bootstrap:dev ./docker/bootstrap",
+    "bootstrap:publish": "docker buildx build --platform linux/amd64,linux/arm64 -t osamanj93/hudhod-bootstrap:latest --push ./docker/bootstrap"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",
     "@base-ui/react": "^1.7.0",
+    "@hudhod/core": "workspace:*",
+    "@hudhod/sdk": "workspace:*",
     "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-context-menu": "^2.3.7",
     "@radix-ui/react-dialog": "^1.1.23",
@@ -52,15 +59,19 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^3.2.4",
     "oxfmt": "^0.65.0",
     "oxlint": "^1.80.0",
     "supabase": "^2.116.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsdown": "^0.15.6",
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@11.23.0"
 }

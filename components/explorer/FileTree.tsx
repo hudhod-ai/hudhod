@@ -3,10 +3,14 @@
 import { useState } from "react";
 
 import { InputDialog } from "@/components/ui/InputDialog";
+import { createWebContainerUiHandlers } from "@/lib/hudhod/ui-bridge";
+import { getHudhodWorkspace } from "@/lib/hudhod/workspace";
 import { getWebContainer } from "@/lib/webcontainer/boot";
-import { createEntry, deleteEntry, readTextFile, renameEntry } from "@/lib/webcontainer/filesystem";
 import { addDependency } from "@/lib/webcontainer/process";
-import { useFileSystemStore, type FileTreeNode } from "@/store/useFileSystemStore";
+import {
+  useFileSystemStore,
+  type FileTreeNode,
+} from "@/store/useFileSystemStore";
 
 import { FileTreeNodeRow } from "./FileTreeNodeRow";
 import { RootContextMenu } from "./RootContextMenu";
@@ -25,13 +29,16 @@ export function FileTree() {
 
   async function handleOpenFile(path: string) {
     const instance = await getWebContainer();
-    const content = await readTextFile(instance, path);
+    const content = await getHudhodWorkspace(instance).fs.readTextFile(path);
     openFile(path, content);
   }
 
   async function handleDelete(node: FileTreeNode) {
     const instance = await getWebContainer();
-    await deleteEntry(instance, node.path);
+    await getHudhodWorkspace(instance).fs.delete(node.path, {
+      recursive: true,
+    });
+    useFileSystemStore.getState().removeOpenTabsUnderPath(node.path);
   }
 
   function joinPath(parentPath: string, name: string) {
@@ -42,15 +49,33 @@ export function FileTree() {
     if (!pendingDialog) return;
     const instance = await getWebContainer();
 
-    if (pendingDialog.kind === "new-file" || pendingDialog.kind === "new-folder") {
+    if (
+      pendingDialog.kind === "new-file" ||
+      pendingDialog.kind === "new-folder"
+    ) {
       const path = joinPath(pendingDialog.parentPath, value);
-      await createEntry(instance, path, pendingDialog.kind === "new-file" ? "file" : "directory");
+      const fs = getHudhodWorkspace(instance).fs;
+      if (pendingDialog.kind === "new-file") {
+        await fs.createFile(path);
+      } else {
+        await fs.createDirectory(path);
+      }
     } else if (pendingDialog.kind === "rename") {
       const parent =
-        pendingDialog.node.path.slice(0, pendingDialog.node.path.lastIndexOf("/")) || "/";
-      await renameEntry(instance, pendingDialog.node.path, joinPath(parent, value));
+        pendingDialog.node.path.slice(
+          0,
+          pendingDialog.node.path.lastIndexOf("/"),
+        ) || "/";
+      const newPath = joinPath(parent, value);
+      await getHudhodWorkspace(instance).fs.rename(
+        pendingDialog.node.path,
+        newPath,
+      );
+      useFileSystemStore
+        .getState()
+        .renameOpenTab(pendingDialog.node.path, newPath);
     } else if (pendingDialog.kind === "add-dependency") {
-      await addDependency(instance, value);
+      await addDependency(instance, value, createWebContainerUiHandlers());
     }
   }
 
@@ -62,8 +87,12 @@ export function FileTree() {
         </span>
       </div> */}
       <RootContextMenu
-        onNewFile={() => setPendingDialog({ kind: "new-file", parentPath: "/" })}
-        onNewFolder={() => setPendingDialog({ kind: "new-folder", parentPath: "/" })}
+        onNewFile={() =>
+          setPendingDialog({ kind: "new-file", parentPath: "/" })
+        }
+        onNewFolder={() =>
+          setPendingDialog({ kind: "new-folder", parentPath: "/" })
+        }
         onAddDependency={() => setPendingDialog({ kind: "add-dependency" })}
       >
         <div className="flex-1 overflow-auto py-1">
@@ -74,8 +103,12 @@ export function FileTree() {
               depth={0}
               activePath={activePath}
               onOpenFile={handleOpenFile}
-              onNewFile={(parentPath) => setPendingDialog({ kind: "new-file", parentPath })}
-              onNewFolder={(parentPath) => setPendingDialog({ kind: "new-folder", parentPath })}
+              onNewFile={(parentPath) =>
+                setPendingDialog({ kind: "new-file", parentPath })
+              }
+              onNewFolder={(parentPath) =>
+                setPendingDialog({ kind: "new-folder", parentPath })
+              }
               onRename={(node) => setPendingDialog({ kind: "rename", node })}
               onDelete={handleDelete}
             />
@@ -95,9 +128,15 @@ export function FileTree() {
                 ? "New Folder"
                 : "New File"
         }
-        label={pendingDialog?.kind === "add-dependency" ? "Package name" : "Name"}
-        submitLabel={pendingDialog?.kind === "add-dependency" ? "Install" : "Create"}
-        defaultValue={pendingDialog?.kind === "rename" ? pendingDialog.node.name : ""}
+        label={
+          pendingDialog?.kind === "add-dependency" ? "Package name" : "Name"
+        }
+        submitLabel={
+          pendingDialog?.kind === "add-dependency" ? "Install" : "Create"
+        }
+        defaultValue={
+          pendingDialog?.kind === "rename" ? pendingDialog.node.name : ""
+        }
         onSubmit={handleDialogSubmit}
       />
     </div>

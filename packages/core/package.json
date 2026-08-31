@@ -1,0 +1,64 @@
+{
+  "name": "@hudhod/core",
+  "version": "0.0.0",
+  "description": "Headless runtime for hudhod — file system, search, diff, process, command, and extension host services for an in-browser IDE.",
+  "keywords": [
+    "browser-ide",
+    "extension-host",
+    "hudhod",
+    "ide",
+    "webcontainer"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./webcontainer": {
+      "types": "./src/webcontainer/index.ts",
+      "default": "./src/webcontainer/index.ts"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./webcontainer": {
+        "types": "./dist/webcontainer/index.d.ts",
+        "default": "./dist/webcontainer/index.js"
+      }
+    },
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hudhod/sdk": "workspace:*",
+    "diff": "^8.0.2",
+    "picomatch": "^4.0.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/picomatch": "^4.0.2",
+    "@webcontainer/api": "^1.6.4"
+  },
+  "peerDependencies": {
+    "@webcontainer/api": "^1.6.4"
+  },
+  "peerDependenciesMeta": {
+    "@webcontainer/api": {
+      "optional": true
+    }
+  }
+}

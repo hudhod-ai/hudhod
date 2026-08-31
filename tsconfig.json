@@ -19,7 +19,10 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@hudhod/sdk": ["./packages/sdk/src/index.ts"],
+      "@hudhod/core": ["./packages/core/src/index.ts"],
+      "@hudhod/core/*": ["./packages/core/src/*"]
     }
   },
   "include": [

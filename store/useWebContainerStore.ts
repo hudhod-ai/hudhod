@@ -1,4 +1,4 @@
-import type { WebContainerProcess } from "@webcontainer/api";
+import type { ProcessHandle } from "@hudhod/sdk";
 import { create } from "zustand";
 
 export type WebContainerStatus =
@@ -14,12 +14,12 @@ interface WebContainerState {
   error: string | null;
   previewUrl: string | null;
   previewPort: number | null;
-  /** Handle to the running dev-server process, kept so it can be killed/respawned. */
-  devProcess: WebContainerProcess | null;
+  /** Handle to the running dev server, kept so it can be restarted. */
+  devProcess: ProcessHandle | null;
   setStatus: (status: WebContainerStatus) => void;
   setError: (error: string | null) => void;
   setPreview: (url: string | null, port: number | null) => void;
-  setDevProcess: (process: WebContainerProcess | null) => void;
+  setDevProcess: (process: ProcessHandle | null) => void;
 }
 
 export const useWebContainerStore = create<WebContainerState>((set) => ({

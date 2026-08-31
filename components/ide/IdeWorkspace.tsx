@@ -1,23 +1,31 @@
 "use client";
 
 import type { FileSystemTree } from "@webcontainer/api";
+import type { CommandRegistry } from "@hudhod/core";
 import dynamic from "next/dynamic";
+import { CommandIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { resetLayout } from "@/components/dockview/panelRegistry";
 import { TooltipProvider } from "@/components/ui/SimpleTooltip";
 import { useColorMode } from "@/hooks/useColorMode";
 import { createClient } from "@/lib/client";
+import { registerBuiltinCommands } from "@/lib/hudhod/builtin-commands";
+import { readExplorerTree } from "@/lib/hudhod/file-tree";
+import { createWebContainerUiHandlers } from "@/lib/hudhod/ui-bridge";
+import { getHudhodWorkspace } from "@/lib/hudhod/workspace";
 import { mcpUseStarterTree } from "@/lib/templates/mcpuse-starter";
 import { getWebContainer } from "@/lib/webcontainer/boot";
 import { attachWebContainerEvents } from "@/lib/webcontainer/events";
 import { mountAndIndex, exportFileSystem } from "@/lib/webcontainer/filesystem";
 import { runInstall, runDev, restartDev } from "@/lib/webcontainer/process";
 import { useDockviewStore } from "@/store/useDockviewStore";
+import { useFileSystemStore } from "@/store/useFileSystemStore";
 import { useLogsStore } from "@/store/useLogsStore";
 import { useWebContainerStore } from "@/store/useWebContainerStore";
 
 import { ActivityBar } from "./ActivityBar";
+import { CommandPalette } from "./CommandPalette";
 
 const DockviewLayout = dynamic(
   () =>
@@ -70,12 +78,16 @@ export function IdeWorkspace({
   const [exporting, setExporting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [commands, setCommands] = useState<CommandRegistry | null>(null);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   useEffect(() => {
     if (bootstrapped.current) return;
     bootstrapped.current = true;
 
-    let cleanupEvents: (() => void) | undefined;
+    let cleanupContainerEvents: (() => void) | undefined;
+    let cleanupFileWatch: (() => void) | undefined;
+    let cleanupCommands: (() => void) | undefined;
 
     async function bootstrap() {
       const setStatus = useWebContainerStore.getState().setStatus;
@@ -84,7 +96,8 @@ export function IdeWorkspace({
         setStatus("booting");
         useLogsStore.getState().append("lifecycle", "Booting WebContainer…\n");
         const instance = await getWebContainer();
-        cleanupEvents = attachWebContainerEvents(instance);
+        const uiHandlers = createWebContainerUiHandlers();
+        cleanupContainerEvents = attachWebContainerEvents(instance, uiHandlers);
 
         let initialTree = mcpUseStarterTree;
         if (projectId) {
@@ -115,8 +128,21 @@ export function IdeWorkspace({
         }
 
         await mountAndIndex(instance, initialTree);
-        await runInstall(instance);
-        await runDev(instance);
+        const workspace = getHudhodWorkspace(instance);
+        const builtinCommands = registerBuiltinCommands(workspace.commands);
+        cleanupCommands = () => builtinCommands.dispose();
+        setCommands(workspace.commands);
+        const refreshExplorer = async () => {
+          useFileSystemStore
+            .getState()
+            .setTree(await readExplorerTree(workspace.fs));
+        };
+        const fileWatch = workspace.fs.onDidChangeFile(() => {
+          void refreshExplorer();
+        });
+        cleanupFileWatch = () => fileWatch.dispose();
+        await runInstall(instance, uiHandlers);
+        await runDev(instance, uiHandlers);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       }
@@ -125,7 +151,9 @@ export function IdeWorkspace({
     void bootstrap();
 
     return () => {
-      cleanupEvents?.();
+      cleanupContainerEvents?.();
+      cleanupFileWatch?.();
+      cleanupCommands?.();
     };
   }, []);
 
@@ -133,7 +161,7 @@ export function IdeWorkspace({
     setRestarting(true);
     try {
       const instance = await getWebContainer();
-      await restartDev(instance);
+      await restartDev(instance, createWebContainerUiHandlers());
     } finally {
       setRestarting(false);
     }
@@ -248,7 +276,7 @@ export function IdeWorkspace({
       const tree = await downloadVersion(version as StoredVersion);
       const instance = await getWebContainer();
       await instance.mount(tree);
-      await restartDev(instance);
+      await restartDev(instance, createWebContainerUiHandlers());
       window.history.replaceState({}, "", `/projects/${projectId}/workspace`);
       useLogsStore
         .getState()
@@ -267,6 +295,22 @@ export function IdeWorkspace({
     const restore = window.setTimeout(() => void handleRestoreVersion(), 0);
     return () => window.clearTimeout(restore);
   }, [handleRestoreVersion, projectId]);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "p"
+      ) {
+        event.preventDefault();
+        setCommandPaletteOpen(true);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <TooltipProvider>
@@ -334,6 +378,15 @@ export function IdeWorkspace({
             >
               {mode === "light" ? "Dark mode" : "Light mode"}
             </button>
+            <button
+              type="button"
+              onClick={() => setCommandPaletteOpen(true)}
+              aria-label="Open command palette"
+              title="Command Palette (Ctrl/Cmd+Shift+P)"
+              className="flex size-7 items-center justify-center rounded text-zinc-600 hover:bg-zinc-200/60 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              <CommandIcon className="size-4" />
+            </button>
           </div>
         </header>
 
@@ -349,6 +402,11 @@ export function IdeWorkspace({
             <DockviewLayout />
           </div>
         </div>
+        <CommandPalette
+          commands={commands}
+          open={commandPaletteOpen}
+          onOpenChange={setCommandPaletteOpen}
+        />
       </div>
     </TooltipProvider>
   );

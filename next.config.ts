@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Workspace packages ship raw TypeScript and are compiled by Next.
+  transpilePackages: ["@hudhod/core", "@hudhod/sdk"],
   // Required for WebContainers (SharedArrayBuffer / cross-origin isolation).
   async headers() {
     return [

@@ -1,0 +1,39 @@
+{
+  "name": "@hudhod/sdk",
+  "version": "0.0.0",
+  "description": "Public API surface for building hudhod extensions — an in-browser IDE runtime powered by WebContainers.",
+  "keywords": [
+    "browser-ide",
+    "extensions",
+    "hudhod",
+    "ide",
+    "sdk",
+    "webcontainer"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  }
+}

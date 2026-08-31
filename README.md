@@ -1,6 +1,7 @@
-# mcpup
+# hudhod
 
-Project version management with Supabase Auth, Postgres, Row Level Security, and private Storage.
+An extensible in-browser development environment with project version management,
+Supabase Auth, Postgres, Row Level Security, and private Storage.
 
 ## Local development
 
