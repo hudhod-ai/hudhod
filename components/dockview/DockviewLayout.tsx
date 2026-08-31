@@ -2,10 +2,14 @@
 
 import "dockview-react/dist/styles/dockview.css";
 import "./dockviewOverrides.css";
-import { DockviewReact, type DockviewReadyEvent, type IDockviewPanelProps } from "dockview-react";
+import {
+  DockviewReact,
+  type DockviewReadyEvent,
+  type IDockviewPanelProps,
+} from "dockview-react";
 
+import { useColorMode } from "@/hooks/useColorMode";
 import { useDockviewStore } from "@/store/useDockviewStore";
-import { useThemeStore } from "@/store/useThemeStore";
 
 import { buildInitialLayout, PANEL_TAB_COMPONENT } from "./panelRegistry";
 import { EditorPanel } from "./panels/EditorPanel";
@@ -16,7 +20,10 @@ import { PreviewPanel } from "./panels/PreviewPanel";
 import { TerminalPanel } from "./panels/TerminalPanel";
 import { dockviewThemeFor } from "./theme";
 
-const components: Record<string, (props: IDockviewPanelProps) => React.ReactElement> = {
+const components: Record<
+  string,
+  (props: IDockviewPanelProps) => React.ReactElement
+> = {
   explorer: ExplorerPanel,
   editor: EditorPanel,
   logs: LogsPanel,
@@ -40,7 +47,7 @@ function handleReady(event: DockviewReadyEvent) {
 }
 
 export function DockviewLayout() {
-  const mode = useThemeStore((state) => state.mode);
+  const { mode } = useColorMode();
 
   return (
     <DockviewReact

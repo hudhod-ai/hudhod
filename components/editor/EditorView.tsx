@@ -2,10 +2,10 @@
 
 import { useEffect, useRef } from "react";
 
+import { useColorMode } from "@/hooks/useColorMode";
 import { getWebContainer } from "@/lib/webcontainer/boot";
 import { writeTextFile } from "@/lib/webcontainer/filesystem";
 import { useFileSystemStore } from "@/store/useFileSystemStore";
-import { useThemeStore } from "@/store/useThemeStore";
 
 import { EditorTabs } from "./EditorTabs";
 import { MonacoEditor } from "./MonacoEditor";
@@ -17,7 +17,7 @@ export function EditorView() {
   const activePath = useFileSystemStore((state) => state.activePath);
   const updateContent = useFileSystemStore((state) => state.updateContent);
   const markSaved = useFileSystemStore((state) => state.markSaved);
-  const mode = useThemeStore((state) => state.mode);
+  const { mode } = useColorMode();
   const saveTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
   const activeTab = tabs.find((tab) => tab.path === activePath);

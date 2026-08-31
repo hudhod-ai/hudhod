@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { useThemeStore } from "@/store/useThemeStore";
+import { useColorMode } from "@/hooks/useColorMode";
 import { useWebContainerStore } from "@/store/useWebContainerStore";
 
 function ReloadIcon() {
@@ -74,10 +74,12 @@ function CollapseIcon() {
 }
 
 export function PreviewFrame() {
-  const mode = useThemeStore((state) => state.mode);
+  const { mode } = useColorMode();
   const previewUrl = useWebContainerStore((state) => state.previewUrl);
 
-  const inspectorUrl = previewUrl ? `${previewUrl}/mcp/inspector?theme=${mode}` : null;
+  const inspectorUrl = previewUrl
+    ? `${previewUrl}/mcp/inspector?theme=${mode}`
+    : null;
 
   console.log("previewUrl:", previewUrl, "inspectorUrl:", inspectorUrl);
 
@@ -97,11 +99,14 @@ function BrowserFrame({ previewUrl }: { previewUrl: string | null }) {
       setIsFullscreen(document.fullscreenElement === previewAreaRef.current);
     }
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
   function navigate(nextPath: string) {
-    const normalized = nextPath.trim().startsWith("/") ? nextPath.trim() : `/${nextPath.trim()}`;
+    const normalized = nextPath.trim().startsWith("/")
+      ? nextPath.trim()
+      : `/${nextPath.trim()}`;
     setPath(normalized);
     setAddressInput(normalized);
   }

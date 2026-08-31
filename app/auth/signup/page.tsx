@@ -1,24 +1,29 @@
+"use client";
+
 import Link from "next/link";
+import { useActionState } from "react";
 
 import { signUpAction } from "@/app/auth/actions";
+import { ActionMessage } from "@/components/forms/ActionMessage";
+import { SubmitButton } from "@/components/forms/SubmitButton";
+import { useActionToast } from "@/components/forms/useActionToast";
+import { initialActionState } from "@/lib/action-state";
 
-export default async function SignupPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const { error } = await searchParams;
+export default function SignupPage() {
+  const [state, action] = useActionState(signUpAction, initialActionState);
+  useActionToast(state);
+
   return (
     <main className="mx-auto flex min-h-screen max-w-xl items-center px-6 py-12">
       <form
-        action={signUpAction}
+        action={action}
         className="w-full space-y-5 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm"
       >
         <div>
           <p className="text-sm font-medium tracking-[0.2em] text-zinc-500 uppercase">mcpup</p>
           <h1 className="mt-2 text-3xl font-semibold">Create account</h1>
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <ActionMessage state={state} />
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="space-y-2 text-sm font-medium">
             First name
@@ -84,9 +89,7 @@ export default async function SignupPage({
           <Link className="text-sm text-zinc-600 underline" href="/auth/login">
             Already have an account?
           </Link>
-          <button className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">
-            Create account
-          </button>
+          <SubmitButton pendingLabel="Creating account...">Create account</SubmitButton>
         </div>
       </form>
     </main>

@@ -1,24 +1,29 @@
+"use client";
+
 import Link from "next/link";
+import { useActionState } from "react";
 
 import { forgotPasswordAction } from "@/app/auth/actions";
+import { ActionMessage } from "@/components/forms/ActionMessage";
+import { SubmitButton } from "@/components/forms/SubmitButton";
+import { useActionToast } from "@/components/forms/useActionToast";
+import { initialActionState } from "@/lib/action-state";
 
-export default async function ForgotPasswordPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const { error } = await searchParams;
+export default function ForgotPasswordPage() {
+  const [state, action] = useActionState(forgotPasswordAction, initialActionState);
+  useActionToast(state);
+
   return (
     <main className="mx-auto flex min-h-screen max-w-md items-center px-6 py-12">
       <form
-        action={forgotPasswordAction}
+        action={action}
         className="w-full space-y-5 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm"
       >
         <div>
           <p className="text-sm font-medium tracking-[0.2em] text-zinc-500 uppercase">mcpup</p>
           <h1 className="mt-2 text-3xl font-semibold">Reset password</h1>
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <ActionMessage state={state} />
         <label className="block space-y-2 text-sm font-medium">
           Email
           <input
@@ -32,9 +37,7 @@ export default async function ForgotPasswordPage({
           <Link className="text-sm text-zinc-600 underline" href="/auth/login">
             Back to sign in
           </Link>
-          <button className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">
-            Send reset link
-          </button>
+          <SubmitButton pendingLabel="Sending...">Send reset link</SubmitButton>
         </div>
       </form>
     </main>

@@ -3,14 +3,14 @@
 import * as RadixTooltip from "@radix-ui/react-tooltip";
 import type { ReactNode } from "react";
 
-interface TooltipProps {
+interface SimpleTooltipProps {
   label: string;
   children: ReactNode;
   side?: "top" | "right" | "bottom" | "left";
 }
 
 /** Thin wrapper around Radix Tooltip with the app's default styling. */
-export function Tooltip({ label, children, side = "right" }: TooltipProps) {
+export function SimpleTooltip({ label, children, side = "right" }: SimpleTooltipProps) {
   return (
     <RadixTooltip.Root delayDuration={300}>
       <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>

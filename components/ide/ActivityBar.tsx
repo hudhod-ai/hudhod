@@ -1,7 +1,7 @@
 "use client";
 
 import { openOrFocusPanel, type PanelId } from "@/components/dockview/panelRegistry";
-import { Tooltip } from "@/components/ui/Tooltip";
+import { SimpleTooltip } from "@/components/ui/SimpleTooltip";
 import { useDockviewStore } from "@/store/useDockviewStore";
 
 import { ExplorerIcon, LogsIcon, PreviewIcon, TerminalIcon } from "./icons";
@@ -26,7 +26,7 @@ export function ActivityBar() {
       {ACTIVITY_ITEMS.map(({ id, label, Icon }) => {
         const isOpen = openPanelIds.has(id);
         return (
-          <Tooltip key={id} label={label}>
+          <SimpleTooltip key={id} label={label}>
             <button
               type="button"
               aria-pressed={isOpen}
@@ -39,7 +39,7 @@ export function ActivityBar() {
             >
               <Icon />
             </button>
-          </Tooltip>
+          </SimpleTooltip>
         );
       })}
     </nav>

@@ -126,7 +126,9 @@ registry.registerPath({
   summary: "Create a project version",
   request: {
     params: idParamSchema,
-    body: { content: { "multipart/form-data": { schema: versionUploadSchema } } },
+    body: {
+      content: { "multipart/form-data": { schema: versionUploadSchema } },
+    },
   },
   responses: {
     201: jsonResponse(projectVersionSchema, "The created project version."),
@@ -168,7 +170,11 @@ registry.registerPath({
   responses: {
     200: {
       description: "The archived WebContainer filesystem snapshot.",
-      content: { "application/gzip": { schema: z.string().openapi({ format: "binary" }) } },
+      content: {
+        "application/gzip": {
+          schema: z.string().openapi({ format: "binary" }),
+        },
+      },
     },
     404: problemResponse,
   },
