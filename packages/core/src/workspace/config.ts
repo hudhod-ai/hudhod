@@ -10,12 +10,15 @@
  */
 
 /** Glob patterns excluded from directory listings and the file tree. */
-export const DEFAULT_FILES_EXCLUDE: readonly string[] = ["**/.git/**", "**/node_modules/**"];
+export const DEFAULT_FILES_EXCLUDE: readonly string[] = [
+  "**/.git/**",
+  // "**/node_modules/**",
+];
 
 /** Glob patterns excluded from search. Broader than the tree exclusions. */
 export const DEFAULT_SEARCH_EXCLUDE: readonly string[] = [
   "**/.git/**",
-  "**/node_modules/**",
+  // "**/node_modules/**",
   "**/dist/**",
   "**/build/**",
   "**/.next/**",
@@ -28,7 +31,7 @@ export const DEFAULT_SEARCH_EXCLUDE: readonly string[] = [
 /** Glob patterns whose changes are ignored by watchers. */
 export const DEFAULT_WATCHER_EXCLUDE: readonly string[] = [
   "**/.git/**",
-  "**/node_modules/**",
+  // "**/node_modules/**",
   "**/.next/**",
 ];
 
@@ -73,7 +76,9 @@ export type WorkspaceConfigOverrides = Partial<WorkspaceConfig>;
  * const config = createWorkspaceConfig({ searchExclude: ["**\/.git/**"] });
  * ```
  */
-export function createWorkspaceConfig(overrides: WorkspaceConfigOverrides = {}): WorkspaceConfig {
+export function createWorkspaceConfig(
+  overrides: WorkspaceConfigOverrides = {},
+): WorkspaceConfig {
   return {
     rootPath: overrides.rootPath ?? "/",
     filesExclude: overrides.filesExclude ?? DEFAULT_FILES_EXCLUDE,

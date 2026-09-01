@@ -57,7 +57,7 @@ export function FileTreeNodeRow({
   onRename,
   onDelete,
 }: FileTreeNodeRowProps) {
-  const [expanded, setExpanded] = useState(depth < 1);
+  const [expanded, setExpanded] = useState(false);
   const isDirectory = node.type === "directory";
   const isActive = node.path === activePath;
 
@@ -72,7 +72,9 @@ export function FileTreeNodeRow({
       >
         <button
           type="button"
-          onClick={() => (isDirectory ? setExpanded((prev) => !prev) : onOpenFile(node.path))}
+          onClick={() =>
+            isDirectory ? setExpanded((prev) => !prev) : onOpenFile(node.path)
+          }
           style={{ paddingLeft: `${depth * 12 + 8}px` }}
           className={`flex w-full appearance-none items-center gap-1.5 border-0 bg-transparent py-0.75 pr-2 text-left text-xs outline-none hover:bg-zinc-100 dark:hover:bg-zinc-800 ${
             isActive
@@ -81,7 +83,13 @@ export function FileTreeNodeRow({
           }`}
         >
           <span className="flex w-3 shrink-0 items-center justify-center text-zinc-400">
-            {isDirectory ? expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} /> : null}
+            {isDirectory ? (
+              expanded ? (
+                <ChevronDown size={12} />
+              ) : (
+                <ChevronRight size={12} />
+              )
+            ) : null}
           </span>
           <span className="flex shrink-0 items-center text-amber-500">
             {isDirectory ? (
