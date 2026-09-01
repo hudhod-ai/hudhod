@@ -20,6 +20,9 @@ importers:
       '@hudhod/extension-new-file':
         specifier: workspace:*
         version: link:packages/extension-new-file
+      '@hudhod/react':
+        specifier: workspace:*
+        version: link:packages/react
       '@hudhod/sdk':
         specifier: workspace:*
         version: link:packages/sdk
@@ -185,6 +188,28 @@ importers:
       vitest:
         specifier: ^3.2.0
         version: 3.2.7(@types/node@20.19.43)(jiti@2.7.0)(lightningcss@1.32.0)(supports-color@7.2.0)(yaml@2.9.0)
+
+  packages/react:
+    dependencies:
+      '@hudhod/sdk':
+        specifier: workspace:*
+        version: link:../sdk
+    devDependencies:
+      '@types/react':
+        specifier: ^19
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19
+        version: 19.2.5(@types/react@19.2.18)
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: 19.2.8
+        version: 19.2.8(react@19.2.8)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
 
   packages/sdk: {}
 

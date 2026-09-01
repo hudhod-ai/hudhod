@@ -8,10 +8,50 @@
  */
 
 import type { WindowUiProvider } from "@hudhod/core";
+import {
+  buildExtensionPanelDefinition,
+  closePanel as closeDockviewPanel,
+  openOrFocusPanel,
+  registerDynamicPanel,
+  unregisterDynamicPanel,
+} from "@/components/dockview/panelRegistry";
 import { useFileSystemStore } from "@/store/useFileSystemStore";
 import { useWindowUiStore } from "@/store/useWindowUiStore";
+import { useDockviewStore } from "@/store/useDockviewStore";
+import { useExtensionPanelStore } from "@/store/useExtensionPanelStore";
 import { getWebContainer } from "@/lib/webcontainer/boot";
 import { getHudhodWorkspace } from "./workspace";
+
+/** Opens (or focuses) a panel, activating its owning extension first so a renderer exists to mount. */
+async function openExtensionPanel(id: string): Promise<void> {
+  const instance = await getWebContainer();
+  const ws = getHudhodWorkspace(instance);
+  await ws.extensions.activateByEvent(`onView:${id}`);
+
+  const api = useDockviewStore.getState().api;
+  if (!api) return;
+
+  if (api.getPanel(id)) {
+    openOrFocusPanel(api, id);
+    return;
+  }
+
+  const entry = useExtensionPanelStore.getState().getRenderer(id);
+  const panelInfo = ws.panels.getPanels().find((p) => p.id === id);
+  const title = entry?.options.title ?? panelInfo?.title ?? id;
+  const location = entry?.options.location ?? panelInfo?.location ?? "bottom";
+
+  registerDynamicPanel(
+    buildExtensionPanelDefinition(
+      id,
+      title,
+      location,
+      entry?.options.initialWidth,
+      entry?.options.initialHeight,
+    ),
+  );
+  openOrFocusPanel(api, id);
+}
 
 /**
  * Creates a WindowUiProvider backed by the app's Zustand stores.
@@ -33,16 +73,33 @@ export function createWindowUiProvider(): WindowUiProvider {
       return useWindowUiStore.getState().requestQuickPick(items, options);
     },
 
-    registerPanel() {
-      throw new Error("Panel registration not yet implemented");
+    registerPanel(id, render, options) {
+      useExtensionPanelStore.getState().registerRenderer(id, render, options);
+      if (options.openImmediately) void openExtensionPanel(id);
+
+      let disposed = false;
+      return {
+        dispose: () => {
+          if (disposed) return;
+          disposed = true;
+          useExtensionPanelStore.getState().unregisterRenderer(id);
+          unregisterDynamicPanel(id);
+          const api = useDockviewStore.getState().api;
+          if (api) closeDockviewPanel(api, id);
+        },
+      };
     },
 
-    async openPanel() {
-      throw new Error("Panel opening not yet implemented");
+    async openPanel(id) {
+      await openExtensionPanel(id);
     },
 
-    async closePanel() {
-      throw new Error("Panel closing not yet implemented");
+    async closePanel(id) {
+      const api = useDockviewStore.getState().api;
+      const panel = api?.getPanel(id);
+      if (!panel) return false;
+      panel.api.close();
+      return true;
     },
 
     async openFile(path) {

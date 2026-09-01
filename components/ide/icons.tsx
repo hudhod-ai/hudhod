@@ -52,3 +52,15 @@ export function PreviewIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+/** Fallback glyph for extension-contributed panels. */
+export function ExtensionIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="3" width="8" height="8" rx="1.5" />
+      <rect x="13" y="3" width="8" height="8" rx="1.5" />
+      <rect x="3" y="13" width="8" height="8" rx="1.5" />
+      <rect x="13" y="13" width="8" height="8" rx="1.5" />
+    </Icon>
+  );
+}

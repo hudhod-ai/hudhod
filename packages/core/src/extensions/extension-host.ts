@@ -19,6 +19,7 @@ import type {
 } from "@hudhod/sdk";
 
 import { DisposableStore } from "../base/disposable";
+import type { PanelRegistry } from "../panels/panel-registry";
 import { parseExtensionManifest } from "./manifest";
 
 /** Current lifecycle state of a registered extension. */
@@ -52,25 +53,27 @@ interface RegisteredExtension {
  *
  * @example
  * ```ts
- * const host = new InProcessExtensionHost(hudhod);
+ * const host = new InProcessExtensionHost(hudhod, panels);
  * host.register(extension);
  * await host.activateByEvent("onStartup");
  * ```
  */
 export class InProcessExtensionHost implements Disposable {
   readonly #hudhod: HudhodApi;
+  readonly #panels: PanelRegistry;
   readonly #extensions = new Map<string, RegisteredExtension>();
   #disposed = false;
 
-  constructor(hudhod: HudhodApi) {
+  constructor(hudhod: HudhodApi, panels: PanelRegistry) {
     this.#hudhod = hudhod;
+    this.#panels = panels;
   }
 
   /**
    * Registers an extension without running its activation hook.
    *
-   * Contributed keybindings are registered immediately so they can be discovered
-   * and resolved before the extension's activate hook runs, enabling lazy activation.
+   * Contributed keybindings and panels are registered immediately so they can be
+   * discovered before the extension's activate hook runs, enabling lazy activation.
    *
    * @throws `ZodError` when the manifest is malformed.
    * @throws `Error` when another extension already owns the same id.
@@ -96,6 +99,16 @@ export class InProcessExtensionHost implements Disposable {
       registered.subscriptions.add(disp);
     }
 
+    // Panel metadata is registered up front; renderers arrive on activation.
+    const panels = manifest.contributes?.panels ?? [];
+    for (const panel of panels) {
+      const disp = this.#panels.registerPanel(panel, {
+        source: "extension",
+        extensionId: manifest.id,
+      });
+      registered.subscriptions.add(disp);
+    }
+
     this.#extensions.set(manifest.id, registered);
 
     let disposed = false;
@@ -103,7 +116,13 @@ export class InProcessExtensionHost implements Disposable {
       dispose: () => {
         if (disposed) return;
         disposed = true;
-        void this.deactivate(manifest.id);
+        // Contributions registered before activation still need releasing when
+        // the extension never activated, in which case `deactivate` is a no-op.
+        if (registered.status === "registered") {
+          registered.subscriptions.dispose();
+        } else {
+          void this.deactivate(manifest.id);
+        }
         this.#extensions.delete(manifest.id);
       },
     };

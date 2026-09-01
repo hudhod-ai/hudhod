@@ -14,6 +14,7 @@ import {
   FileSystemService,
   InProcessExtensionHost,
   KeybindingRegistry,
+  PanelRegistry,
   ProcessService,
   SearchService,
   WindowService,
@@ -40,6 +41,8 @@ export interface HudhodWorkspaceRuntime {
   readonly commands: CommandRegistry;
   /** Keybinding registry. */
   readonly keybindings: KeybindingRegistry;
+  /** Panels contributed by extensions. */
+  readonly panels: PanelRegistry;
   /** Window and UI operations. */
   readonly window: WindowService;
   /** Extension host for lazy loading and activation. */
@@ -80,6 +83,7 @@ export function getHudhodWorkspace(
       : "other";
 
   const keybindings = new KeybindingRegistry(platform);
+  const panels = new PanelRegistry();
   const window = new WindowService(createWindowUiProvider());
   const commands = new CommandRegistry();
   const search = new SearchService(fs);
@@ -111,7 +115,7 @@ export function getHudhodWorkspace(
     window,
   };
 
-  const extensions = new InProcessExtensionHost(api);
+  const extensions = new InProcessExtensionHost(api, panels);
 
   const runtime: HudhodWorkspaceRuntime = {
     fs,
@@ -120,6 +124,7 @@ export function getHudhodWorkspace(
     process,
     commands,
     keybindings,
+    panels,
     window,
     extensions,
     api,
@@ -128,6 +133,7 @@ export function getHudhodWorkspace(
       process.dispose();
       commands.dispose();
       keybindings.dispose();
+      panels.dispose();
       window.dispose();
       extensions.dispose();
       runtimes.delete(container);

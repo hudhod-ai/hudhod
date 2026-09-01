@@ -40,6 +40,8 @@ export interface PanelContribution {
   readonly id: string;
   /** Tab title. */
   readonly title: string;
+  /** Opaque to the SDK; the host application defines what a valid icon value is. */
+  readonly icon?: unknown;
   /**
    * Preferred dock location.
    * @defaultValue "bottom"

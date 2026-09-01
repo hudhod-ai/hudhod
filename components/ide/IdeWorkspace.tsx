@@ -26,6 +26,7 @@ import { mountAndIndex, exportFileSystem } from "@/lib/webcontainer/filesystem";
 import { runInstall, runDev, restartDev } from "@/lib/webcontainer/process";
 import { useDockviewStore } from "@/store/useDockviewStore";
 import { useFileSystemStore } from "@/store/useFileSystemStore";
+import { useHudhodWorkspaceStore } from "@/store/useHudhodWorkspaceStore";
 import { useLogsStore } from "@/store/useLogsStore";
 import { useWebContainerStore } from "@/store/useWebContainerStore";
 
@@ -94,6 +95,7 @@ export function IdeWorkspace({
     let cleanupContainerEvents: (() => void) | undefined;
     let cleanupFileWatch: (() => void) | undefined;
     let cleanupCommands: (() => void) | undefined;
+    let cleanupPanelWatch: (() => void) | undefined;
 
     async function bootstrap() {
       const setStatus = useWebContainerStore.getState().setStatus;
@@ -136,10 +138,18 @@ export function IdeWorkspace({
         await mountAndIndex(instance, initialTree);
         const ws = getHudhodWorkspace(instance);
         workspaceRef.current = ws;
+        useHudhodWorkspaceStore.getState().setWorkspace(ws);
 
+        (window as any).__hudhod = useHudhodWorkspaceStore;
         // Register the sample extension
         ws.extensions.register(newFileExtension);
         await ws.extensions.activateByEvent("onStartup");
+
+        useHudhodWorkspaceStore.getState().setPanels(ws.panels.getPanels());
+        const panelWatch = ws.panels.onDidChangePanels((panels) =>
+          useHudhodWorkspaceStore.getState().setPanels(panels),
+        );
+        cleanupPanelWatch = () => panelWatch.dispose();
 
         const refreshExplorer = async () => {
           useFileSystemStore.getState().setTree(await readExplorerTree(ws.fs));
@@ -171,6 +181,9 @@ export function IdeWorkspace({
       cleanupContainerEvents?.();
       cleanupFileWatch?.();
       cleanupCommands?.();
+      cleanupPanelWatch?.();
+      useHudhodWorkspaceStore.getState().setWorkspace(null);
+      useHudhodWorkspaceStore.getState().setPanels([]);
       workspaceRef.current?.dispose();
     };
   }, []);

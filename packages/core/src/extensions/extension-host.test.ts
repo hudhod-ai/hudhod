@@ -1,9 +1,14 @@
 import type { Extension, HudhodApi } from "@hudhod/sdk";
 import { describe, expect, it, vi } from "vitest";
 
+import { PanelRegistry } from "../panels/panel-registry";
 import { InProcessExtensionHost } from "./extension-host";
 
 const hudhod = {} as HudhodApi;
+
+function createHost(panels = new PanelRegistry()): InProcessExtensionHost {
+  return new InProcessExtensionHost(hudhod, panels);
+}
 
 function extension(overrides: Partial<Extension> = {}): Extension {
   return {
@@ -21,7 +26,7 @@ function extension(overrides: Partial<Extension> = {}): Extension {
 describe("InProcessExtensionHost", () => {
   it("registers without activating", () => {
     const activate = vi.fn();
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
 
     host.register(extension({ activate }));
 
@@ -31,7 +36,7 @@ describe("InProcessExtensionHost", () => {
 
   it("activates extensions matching an event", async () => {
     const activate = vi.fn();
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.register(extension({ activate }));
 
     await host.activateByEvent("onStartup");
@@ -42,7 +47,7 @@ describe("InProcessExtensionHost", () => {
 
   it("does not activate extensions for a different event", async () => {
     const activate = vi.fn();
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.register(
       extension({
         manifest: {
@@ -62,7 +67,7 @@ describe("InProcessExtensionHost", () => {
 
   it("defaults a missing activationEvents array to onStartup", async () => {
     const activate = vi.fn();
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.register(
       extension({
         manifest: { id: "acme.default", name: "Default", version: "1.0.0" },
@@ -77,7 +82,7 @@ describe("InProcessExtensionHost", () => {
 
   it("only calls activate once for repeated matching events", async () => {
     const activate = vi.fn();
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.register(extension({ activate }));
 
     await host.activateByEvent("onStartup");
@@ -91,7 +96,7 @@ describe("InProcessExtensionHost", () => {
     const activate = vi.fn(
       () => new Promise<void>((resolve) => (resolveActivation = resolve)),
     );
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.register(extension({ activate }));
 
     const first = host.activateByEvent("onStartup");
@@ -104,7 +109,7 @@ describe("InProcessExtensionHost", () => {
 
   it("passes the validated manifest and hudhod api to activate", async () => {
     const activate = vi.fn();
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.register(extension({ activate }));
 
     await host.activate("acme.demo");
@@ -120,7 +125,7 @@ describe("InProcessExtensionHost", () => {
 
   it("cleans subscriptions during deactivation", async () => {
     const dispose = vi.fn();
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.register(
       extension({
         activate: (context) => {
@@ -138,7 +143,7 @@ describe("InProcessExtensionHost", () => {
 
   it("calls deactivate before subscriptions are disposed", async () => {
     const calls: string[] = [];
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.register(
       extension({
         activate: (context) => {
@@ -159,7 +164,7 @@ describe("InProcessExtensionHost", () => {
   });
 
   it("reports false when deactivating an inactive or unknown extension", async () => {
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.register(extension());
 
     await expect(host.deactivate("acme.demo")).resolves.toBe(false);
@@ -167,7 +172,7 @@ describe("InProcessExtensionHost", () => {
   });
 
   it("unregisters a disposed registration", async () => {
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     const registration = host.register(extension());
 
     registration.dispose();
@@ -177,14 +182,14 @@ describe("InProcessExtensionHost", () => {
   });
 
   it("rejects a duplicate extension id", () => {
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.register(extension());
 
     expect(() => host.register(extension())).toThrow("already registered");
   });
 
   it("records a failed activation without losing the original error", async () => {
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.register(
       extension({
         activate: () => {
@@ -202,16 +207,49 @@ describe("InProcessExtensionHost", () => {
   });
 
   it("rejects activation of an unknown id", async () => {
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
 
     await expect(host.activate("missing")).rejects.toThrow("not registered");
   });
 
   it("blocks use after disposal", async () => {
-    const host = new InProcessExtensionHost(hudhod);
+    const host = createHost();
     host.dispose();
 
     expect(() => host.register(extension())).toThrow("disposed");
     await expect(host.activateByEvent("onStartup")).rejects.toThrow("disposed");
+  });
+
+  it("registers contributed panels before activation and drops them on unregister", () => {
+    const panels = new PanelRegistry();
+    const host = createHost(panels);
+
+    const registration = host.register(
+      extension({
+        manifest: {
+          id: "acme.demo",
+          name: "Demo",
+          version: "1.0.0",
+          activationEvents: ["onStartup"],
+          contributes: {
+            panels: [{ id: "acme.demo.logs", title: "Logs", location: "left" }],
+          },
+        },
+      }),
+    );
+
+    expect(panels.getPanels()).toEqual([
+      {
+        id: "acme.demo.logs",
+        title: "Logs",
+        location: "left",
+        source: "extension",
+        extensionId: "acme.demo",
+      },
+    ]);
+
+    registration.dispose();
+
+    expect(panels.getPanels()).toEqual([]);
   });
 });

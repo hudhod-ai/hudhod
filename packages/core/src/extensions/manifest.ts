@@ -11,10 +11,7 @@
 import type { ExtensionManifest } from "@hudhod/sdk";
 import { z } from "zod";
 
-import {
-  keybindingFromEvent,
-  parseKeybinding,
-} from "../keybindings/keybinding-parser";
+import { parseKeybinding } from "../keybindings/keybinding-parser";
 
 const extensionId = z
   .string()
@@ -34,6 +31,7 @@ const commandContribution = z.object({
 const panelContribution = z.object({
   id: z.string().min(1).max(256),
   title: z.string().min(1).max(256),
+  icon: z.unknown().optional(),
   location: z.enum(["left", "right", "bottom", "center"]).optional(),
 });
 
@@ -119,8 +117,7 @@ export const extensionManifestSchema = z
     }
 
     // Validate keybindings reference existing commands
-    for (let i = 0; i < keybindings.length; i++) {
-      const kb = keybindings[i];
+    for (const [i, kb] of keybindings.entries()) {
       if (!commandIds.includes(kb.command)) {
         context.addIssue({
           code: "custom",
@@ -132,8 +129,7 @@ export const extensionManifestSchema = z
 
     // Check for duplicate (key, command) pairs
     const seen = new Set<string>();
-    for (let i = 0; i < keybindings.length; i++) {
-      const kb = keybindings[i];
+    for (const [i, kb] of keybindings.entries()) {
       const key = kb.key;
       const pair = `${key}:${kb.command}`;
       if (seen.has(pair)) {

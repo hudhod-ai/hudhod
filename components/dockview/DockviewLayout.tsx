@@ -11,9 +11,10 @@ import {
 import { useColorMode } from "@/hooks/useColorMode";
 import { useDockviewStore } from "@/store/useDockviewStore";
 
-import { buildInitialLayout, PANEL_TAB_COMPONENT } from "./panelRegistry";
+import { buildInitialLayout, EXTENSION_PANEL_HOST, PANEL_TAB_COMPONENT } from "./panelRegistry";
 import { EditorPanel } from "./panels/EditorPanel";
 import { ExplorerPanel } from "./panels/ExplorerPanel";
+import { ExtensionPanelHost } from "./panels/ExtensionPanelHost";
 import { LogsPanel } from "./panels/LogsPanel";
 import { PanelTab } from "./panels/PanelTab";
 import { PreviewPanel } from "./panels/PreviewPanel";
@@ -29,6 +30,7 @@ const components: Record<
   logs: LogsPanel,
   terminal: TerminalPanel,
   preview: PreviewPanel,
+  [EXTENSION_PANEL_HOST]: ExtensionPanelHost,
 };
 
 const tabComponents = {

@@ -30,6 +30,8 @@ export {
   extensionManifestSchema,
   parseExtensionManifest,
 } from "./extensions/manifest";
+export { PanelRegistry } from "./panels/panel-registry";
+export type { PanelInfo } from "./panels/panel-registry";
 export { FileSystemService } from "./fs/file-system-service";
 export type { FileSystemServiceOptions } from "./fs/file-system-service";
 export { InMemoryFileSystemProvider } from "./fs/in-memory-provider";

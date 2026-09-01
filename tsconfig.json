@@ -22,7 +22,8 @@
       "@/*": ["./*"],
       "@hudhod/sdk": ["./packages/sdk/src/index.ts"],
       "@hudhod/core": ["./packages/core/src/index.ts"],
-      "@hudhod/core/*": ["./packages/core/src/*"]
+      "@hudhod/core/*": ["./packages/core/src/*"],
+      "@hudhod/react": ["./packages/react/src/index.tsx"]
     }
   },
   "include": [
