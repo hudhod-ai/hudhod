@@ -6,6 +6,7 @@
 
 import type { HudhodApi } from "./api";
 import type { Disposable } from "./lifecycle";
+import type { KeybindingContribution } from "./keybindings";
 
 /**
  * When an extension should be loaded.
@@ -52,6 +53,8 @@ export interface Contributions {
   readonly commands?: readonly CommandContribution[];
   /** Panels the extension provides. */
   readonly panels?: readonly PanelContribution[];
+  /** Keybindings the extension provides. */
+  readonly keybindings?: readonly KeybindingContribution[];
 }
 
 /** Identity and capabilities of an extension. */

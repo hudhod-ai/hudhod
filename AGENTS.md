@@ -23,6 +23,18 @@ This monorepo is a Next.js application with a small package-based runtime archit
 - `packages/sdk/`: public extension API surface and types for agents/extensions.
 - `supabase/`: schema, migrations, and local database configuration.
 
+## Extension Development
+
+See [EXTENSION-DEVELOPMENT.md](./EXTENSION-DEVELOPMENT.md) for comprehensive documentation on:
+
+- Extension naming conventions (package names and extension IDs)
+- Extension architecture and lifecycle
+- Project structure and build configuration
+- Manifest format and contribution points
+- Available APIs (file system, commands, window, search, keybindings, processes)
+- Complete example: the built-in "New File" extension
+- Best practices for lazy activation, error handling, and cleanup
+
 ## Package responsibilities
 
 ### `packages/core`

@@ -46,7 +46,7 @@ export async function runInstall(
   handlers: WebContainerTaskHandlers,
 ): Promise<void> {
   handlers.onStatusChange("installing");
-  const installProcess = await getHudhodWorkspace(instance).processes.spawn(
+  const installProcess = await getHudhodWorkspace(instance).process.spawn(
     "npm",
     ["install"],
   );
@@ -63,7 +63,7 @@ export async function runDev(
   handlers: WebContainerTaskHandlers,
 ): Promise<void> {
   handlers.onStatusChange("starting");
-  const devProcess = await getHudhodWorkspace(instance).processes.spawn("npm", [
+  const devProcess = await getHudhodWorkspace(instance).process.spawn("npm", [
     "run",
     "dev",
   ]);
@@ -90,14 +90,16 @@ export async function addDependency(
   handlers: WebContainerTaskHandlers,
 ): Promise<void> {
   handlers.onLog("install", `$ npm install ${packageName}\n`);
-  const installProcess = await getHudhodWorkspace(instance).processes.spawn(
+  const installProcess = await getHudhodWorkspace(instance).process.spawn(
     "npm",
     ["install", packageName],
   );
   void pipeOutputToLogs(installProcess, "install", handlers);
   const exitCode = await installProcess.exit;
   if (exitCode !== 0) {
-    throw new Error(`npm install ${packageName} failed with exit code ${exitCode}`);
+    throw new Error(
+      `npm install ${packageName} failed with exit code ${exitCode}`,
+    );
   }
   await restartDev(instance, handlers);
 }

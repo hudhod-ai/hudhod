@@ -2,18 +2,23 @@
 
 import type { FileSystemTree } from "@webcontainer/api";
 import type { CommandRegistry } from "@hudhod/core";
+import newFileExtension from "@hudhod/extension-new-file";
 import dynamic from "next/dynamic";
 import { CommandIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { resetLayout } from "@/components/dockview/panelRegistry";
 import { TooltipProvider } from "@/components/ui/SimpleTooltip";
+import { WindowUiHost } from "@/components/ide/WindowUiHost";
 import { useColorMode } from "@/hooks/useColorMode";
 import { createClient } from "@/lib/client";
 import { registerBuiltinCommands } from "@/lib/hudhod/builtin-commands";
 import { readExplorerTree } from "@/lib/hudhod/file-tree";
 import { createWebContainerUiHandlers } from "@/lib/hudhod/ui-bridge";
-import { getHudhodWorkspace } from "@/lib/hudhod/workspace";
+import {
+  getHudhodWorkspace,
+  type HudhodWorkspaceRuntime,
+} from "@/lib/hudhod/workspace";
 import { mcpUseStarterTree } from "@/lib/templates/mcpuse-starter";
 import { getWebContainer } from "@/lib/webcontainer/boot";
 import { attachWebContainerEvents } from "@/lib/webcontainer/events";
@@ -80,6 +85,7 @@ export function IdeWorkspace({
   const [restoring, setRestoring] = useState(false);
   const [commands, setCommands] = useState<CommandRegistry | null>(null);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const workspaceRef = useRef<HudhodWorkspaceRuntime | null>(null);
 
   useEffect(() => {
     if (bootstrapped.current) return;
@@ -128,16 +134,27 @@ export function IdeWorkspace({
         }
 
         await mountAndIndex(instance, initialTree);
-        const workspace = getHudhodWorkspace(instance);
-        const builtinCommands = registerBuiltinCommands(workspace.commands);
-        cleanupCommands = () => builtinCommands.dispose();
-        setCommands(workspace.commands);
+        const ws = getHudhodWorkspace(instance);
+        workspaceRef.current = ws;
+
+        // Register the sample extension
+        ws.extensions.register(newFileExtension);
+        await ws.extensions.activateByEvent("onStartup");
+
         const refreshExplorer = async () => {
-          useFileSystemStore
-            .getState()
-            .setTree(await readExplorerTree(workspace.fs));
+          useFileSystemStore.getState().setTree(await readExplorerTree(ws.fs));
         };
-        const fileWatch = workspace.fs.onDidChangeFile(() => {
+
+        const builtinCommands = registerBuiltinCommands(
+          ws.commands,
+          ws.keybindings,
+          () => setCommandPaletteOpen(true),
+          refreshExplorer,
+        );
+        cleanupCommands = () => builtinCommands.dispose();
+        setCommands(ws.commands);
+
+        const fileWatch = ws.fs.onDidChangeFile(() => {
           void refreshExplorer();
         });
         cleanupFileWatch = () => fileWatch.dispose();
@@ -154,6 +171,7 @@ export function IdeWorkspace({
       cleanupContainerEvents?.();
       cleanupFileWatch?.();
       cleanupCommands?.();
+      workspaceRef.current?.dispose();
     };
   }, []);
 
@@ -296,16 +314,31 @@ export function IdeWorkspace({
     return () => window.clearTimeout(restore);
   }, [handleRestoreVersion, projectId]);
 
+  // Keybinding dispatcher: resolves keyboard events to registered commands
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (
-        (event.metaKey || event.ctrlKey) &&
-        event.shiftKey &&
-        event.key.toLowerCase() === "p"
-      ) {
-        event.preventDefault();
-        setCommandPaletteOpen(true);
-      }
+      const ws = workspaceRef.current;
+      if (!ws) return;
+
+      const binding = ws.keybindings.resolve({
+        key: event.key,
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        shiftKey: event.shiftKey,
+        altKey: event.altKey,
+      });
+
+      if (!binding) return;
+
+      event.preventDefault();
+      void ws.extensions
+        .activateByEvent(`onCommand:${binding.command}`)
+        .then(() => ws.commands.executeCommand(binding.command))
+        .catch((err: unknown) => {
+          useWebContainerStore
+            .getState()
+            .setError(err instanceof Error ? err.message : String(err));
+        });
     }
 
     window.addEventListener("keydown", handleKeyDown);
@@ -407,6 +440,7 @@ export function IdeWorkspace({
           open={commandPaletteOpen}
           onOpenChange={setCommandPaletteOpen}
         />
+        <WindowUiHost />
       </div>
     </TooltipProvider>
   );

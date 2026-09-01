@@ -7,6 +7,7 @@
 import type { CommandsApi } from "./commands";
 import type { DiffApi } from "./diff";
 import type { FileSystemApi } from "./fs";
+import type { KeybindingsApi } from "./keybindings";
 import type { ProcessApi } from "./process";
 import type { SearchApi } from "./search";
 import type { TerminalApi } from "./terminal";
@@ -37,6 +38,8 @@ export interface HudhodApi {
   readonly terminal: TerminalApi;
   /** Register and invoke commands. */
   readonly commands: CommandsApi;
+  /** Register and resolve keybindings. */
+  readonly keybindings: KeybindingsApi;
   /** Show UI and contribute panels. */
   readonly window: WindowApi;
 }

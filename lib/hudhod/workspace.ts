@@ -12,14 +12,19 @@ import {
   CommandRegistry,
   DiffService,
   FileSystemService,
+  InProcessExtensionHost,
+  KeybindingRegistry,
   ProcessService,
   SearchService,
+  WindowService,
 } from "@hudhod/core";
+import type { HudhodApi } from "@hudhod/sdk";
 import {
   WebContainerFileSystemProvider,
   WebContainerProcessSpawner,
 } from "@hudhod/core/webcontainer";
 import type { WebContainer } from "@webcontainer/api";
+import { createWindowUiProvider } from "./window-bridge";
 
 /** The headless services backing one mounted WebContainer workspace. */
 export interface HudhodWorkspaceRuntime {
@@ -30,9 +35,17 @@ export interface HudhodWorkspaceRuntime {
   /** Text and file comparison. */
   readonly diff: DiffService;
   /** Multi-process command execution. */
-  readonly processes: ProcessService;
+  readonly process: ProcessService;
   /** Command catalog for UI and extensions. */
   readonly commands: CommandRegistry;
+  /** Keybinding registry. */
+  readonly keybindings: KeybindingRegistry;
+  /** Window and UI operations. */
+  readonly window: WindowService;
+  /** Extension host for lazy loading and activation. */
+  readonly extensions: InProcessExtensionHost;
+  /** Full API surface for extensions. */
+  readonly api: HudhodApi;
   /** Releases every workspace-scoped service. */
   dispose(): void;
 }
@@ -46,6 +59,7 @@ const runtimes = new WeakMap<WebContainer, HudhodWorkspaceRuntime>();
  * ```ts
  * const workspace = getHudhodWorkspace(container);
  * await workspace.fs.writeTextFile("/src/index.ts", "export {};");
+ * await workspace.extensions.register(myExtension);
  * ```
  */
 export function getHudhodWorkspace(
@@ -57,16 +71,65 @@ export function getHudhodWorkspace(
   const fs = new FileSystemService(
     new WebContainerFileSystemProvider(container),
   );
+
+  // Detect platform for keybindings
+  const platform =
+    typeof navigator !== "undefined" &&
+    /Mac|iPhone|iPad|iPod/.test(navigator.platform)
+      ? "mac"
+      : "other";
+
+  const keybindings = new KeybindingRegistry(platform);
+  const window = new WindowService(createWindowUiProvider());
+  const commands = new CommandRegistry();
+  const search = new SearchService(fs);
+  const diff = new DiffService(fs);
+  const process = new ProcessService(new WebContainerProcessSpawner(container));
+
+  const api: HudhodApi = {
+    version: "0.1.0",
+    fs,
+    workspace: {
+      // Stub: workspace not yet implemented
+      roots: [],
+      onDidChangeRoots: () => ({ dispose: () => {} }),
+    } as any,
+    search,
+    diff,
+    process,
+    terminal: {
+      // Stub: terminal not yet implemented
+      create: async () => {
+        throw new Error("Terminal API not yet implemented");
+      },
+      terminals: [],
+      onDidOpenTerminal: () => ({ dispose: () => {} }),
+      onDidCloseTerminal: () => ({ dispose: () => {} }),
+    } as any,
+    commands,
+    keybindings,
+    window,
+  };
+
+  const extensions = new InProcessExtensionHost(api);
+
   const runtime: HudhodWorkspaceRuntime = {
     fs,
-    search: new SearchService(fs),
-    diff: new DiffService(fs),
-    processes: new ProcessService(new WebContainerProcessSpawner(container)),
-    commands: new CommandRegistry(),
+    search,
+    diff,
+    process,
+    commands,
+    keybindings,
+    window,
+    extensions,
+    api,
     dispose() {
       fs.dispose();
-      runtime.processes.dispose();
-      runtime.commands.dispose();
+      process.dispose();
+      commands.dispose();
+      keybindings.dispose();
+      window.dispose();
+      extensions.dispose();
       runtimes.delete(container);
     },
   };

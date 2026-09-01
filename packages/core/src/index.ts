@@ -11,6 +11,15 @@
 
 export * from "./base/index";
 export { CommandRegistry } from "./commands/command-registry";
+export { KeybindingRegistry } from "./keybindings/keybinding-registry";
+export {
+  keybindingFromEvent,
+  keybindingToString,
+  parseKeybinding,
+  type NormalizedKeybinding,
+} from "./keybindings/keybinding-parser";
+export { WindowService } from "./window/window-service";
+export type { WindowUiProvider } from "./window/window-service";
 export { DiffService } from "./diff/diff-service";
 export { InProcessExtensionHost } from "./extensions/extension-host";
 export type {

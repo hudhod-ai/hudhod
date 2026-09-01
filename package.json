@@ -28,6 +28,7 @@
     "@asteasolutions/zod-to-openapi": "^9.1.0",
     "@base-ui/react": "^1.7.0",
     "@hudhod/core": "workspace:*",
+    "@hudhod/extension-new-file": "workspace:*",
     "@hudhod/sdk": "workspace:*",
     "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-context-menu": "^2.3.7",

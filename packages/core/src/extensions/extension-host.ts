@@ -69,6 +69,9 @@ export class InProcessExtensionHost implements Disposable {
   /**
    * Registers an extension without running its activation hook.
    *
+   * Contributed keybindings are registered immediately so they can be discovered
+   * and resolved before the extension's activate hook runs, enabling lazy activation.
+   *
    * @throws `ZodError` when the manifest is malformed.
    * @throws `Error` when another extension already owns the same id.
    */
@@ -85,6 +88,14 @@ export class InProcessExtensionHost implements Disposable {
       subscriptions: new DisposableStore(),
       status: "registered",
     };
+
+    // Register contributed keybindings immediately (lazy activation support)
+    const keybindings = manifest.contributes?.keybindings ?? [];
+    for (const kb of keybindings) {
+      const disp = this.#hudhod.keybindings.registerKeybinding(kb);
+      registered.subscriptions.add(disp);
+    }
+
     this.#extensions.set(manifest.id, registered);
 
     let disposed = false;

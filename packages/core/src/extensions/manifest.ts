@@ -11,6 +11,11 @@
 import type { ExtensionManifest } from "@hudhod/sdk";
 import { z } from "zod";
 
+import {
+  keybindingFromEvent,
+  parseKeybinding,
+} from "../keybindings/keybinding-parser";
+
 const extensionId = z
   .string()
   .min(3)
@@ -30,6 +35,37 @@ const panelContribution = z.object({
   id: z.string().min(1).max(256),
   title: z.string().min(1).max(256),
   location: z.enum(["left", "right", "bottom", "center"]).optional(),
+});
+
+const keybindingContribution = z.object({
+  command: z.string().min(1),
+  key: z
+    .string()
+    .min(1)
+    .superRefine((val, ctx) => {
+      try {
+        parseKeybinding(val);
+      } catch {
+        ctx.addIssue({
+          code: "custom",
+          message: `Invalid keybinding syntax: ${val}`,
+        });
+      }
+    }),
+  mac: z
+    .string()
+    .min(1)
+    .superRefine((val, ctx) => {
+      try {
+        parseKeybinding(val);
+      } catch {
+        ctx.addIssue({
+          code: "custom",
+          message: `Invalid macOS keybinding syntax: ${val}`,
+        });
+      }
+    })
+    .optional(),
 });
 
 const activationEvent = z.union([
@@ -56,6 +92,7 @@ export const extensionManifestSchema = z
       .object({
         commands: z.array(commandContribution).optional(),
         panels: z.array(panelContribution).optional(),
+        keybindings: z.array(keybindingContribution).optional(),
       })
       .optional(),
   })
@@ -64,6 +101,7 @@ export const extensionManifestSchema = z
       manifest.contributes?.commands?.map((command) => command.id) ?? [];
     const panelIds =
       manifest.contributes?.panels?.map((panel) => panel.id) ?? [];
+    const keybindings = manifest.contributes?.keybindings ?? [];
 
     if (new Set(commandIds).size !== commandIds.length) {
       context.addIssue({
@@ -78,6 +116,34 @@ export const extensionManifestSchema = z
         path: ["contributes", "panels"],
         message: "panel contribution ids must be unique",
       });
+    }
+
+    // Validate keybindings reference existing commands
+    for (let i = 0; i < keybindings.length; i++) {
+      const kb = keybindings[i];
+      if (!commandIds.includes(kb.command)) {
+        context.addIssue({
+          code: "custom",
+          path: ["contributes", "keybindings", i, "command"],
+          message: `Command '${kb.command}' is not defined in contributes.commands`,
+        });
+      }
+    }
+
+    // Check for duplicate (key, command) pairs
+    const seen = new Set<string>();
+    for (let i = 0; i < keybindings.length; i++) {
+      const kb = keybindings[i];
+      const key = kb.key;
+      const pair = `${key}:${kb.command}`;
+      if (seen.has(pair)) {
+        context.addIssue({
+          code: "custom",
+          path: ["contributes", "keybindings", i],
+          message: `Duplicate keybinding: key '${key}' for command '${kb.command}'`,
+        });
+      }
+      seen.add(pair);
     }
   });
 
