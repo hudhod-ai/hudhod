@@ -34,6 +34,7 @@ const filesExtension = defineExtension({
       registerReactPanel(context.hudhod, "files", FilesPanel, {
         title: "Files",
         location: "left",
+        initialWidth: 280,
       }),
     );
   },

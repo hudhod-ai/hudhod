@@ -41,10 +41,16 @@ See [COMPOSABLE-IDE-DEVELOPMENT.md](./COMPOSABLE-IDE-DEVELOPMENT.md) when compos
 from the packages or changing host/runtime boundaries.
 
 - Put reusable React workbench components and React host code in `packages/react`.
+- Keep Dockview-specific workbench behavior and baseline styling in `packages/react`.
 - Put WebContainer-specific adapters in `packages/webcontainer`.
 - Keep `packages/core` framework- and environment-agnostic.
 - Keep product persistence, editor state, dialogs, extension catalogs, and visual policy in the
   consuming application rather than copying `components/ide/IdeWorkspace.tsx`.
+- Compose runtimes through `createHudhodRuntime()` or `createHudhodReactHost()` instead of
+  constructing application-specific service graphs directly.
+- A consuming client application imports `@hudhod/react/styles.css` once for baseline workbench
+  and Dockview styles; see package READMEs for setup requirements, especially
+  `packages/webcontainer/README.md` for browser-only WebContainer constraints.
 
 ## Package responsibilities
 

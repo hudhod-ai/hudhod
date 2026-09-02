@@ -23,6 +23,7 @@ Create the host once for an environment instance, register extensions before act
 import { createHudhodReactHost, HudhodWorkbench, type HudhodReactHost } from "@hudhod/react";
 import { createWebContainerServices } from "@hudhod/webcontainer";
 import type { WebContainer } from "@webcontainer/api";
+import "@hudhod/react/styles.css";
 
 function createIdeHost(container: WebContainer): HudhodReactHost {
   const host = createHudhodReactHost({
@@ -49,6 +50,10 @@ export function MyIde({ host }: { host: HudhodReactHost }) {
 ```
 
 The workbench activates panels and contributed views through the normal `onView:<id>` flow. Registering an extension does not activate it.
+
+Import `@hudhod/react/styles.css` once in the client entry point. It includes Dockview's base
+stylesheet and small scoped `.hudhod-*` structural defaults. Tailwind is optional; host-provided
+panels, custom activity items, and product UI remain responsible for their own styling.
 
 ## UI Adapter
 
@@ -103,6 +108,18 @@ Set `showPanelHeaders={false}` to remove Dockview's tab/header strip for that
 workbench instance. It does not affect other workbenches or editors.
 
 The host always provides the native `editor` panel. `initialPanels` defaults to `["editor"]`; other ids must be extension-contributed panels or view containers.
+
+Initial panels open sequentially. When `getPanelPosition` references another panel, put that
+reference panel earlier in `initialPanels`. Register a panel with `initialWidth` or
+`initialHeight` to request its initial Dockview size in CSS pixels:
+
+```tsx
+registerReactPanel(context.hudhod, "explorer", ExplorerPanel, {
+  title: "Explorer",
+  location: "left",
+  initialWidth: 280,
+});
+```
 
 ## Customize The Activity Bar
 

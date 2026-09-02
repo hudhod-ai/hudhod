@@ -279,11 +279,21 @@ function createController(
       }
       const position =
         getPanelPosition?.(panel, api) ?? defaultPanelPosition(panel, api);
+      const renderer = host.panelRenderers.get(id);
+      const options = renderer?.options;
       api.addPanel({
         id,
         title: panel.title,
         component: EXTENSION_PANEL_HOST,
         position,
+        initialWidth:
+          options && "initialWidth" in options
+            ? options.initialWidth
+            : undefined,
+        initialHeight:
+          options && "initialHeight" in options
+            ? options.initialHeight
+            : undefined,
       });
     },
     async closePanel(id: string) {

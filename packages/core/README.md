@@ -15,19 +15,18 @@ plain Node.
 pnpm add @hudhod/core @hudhod/sdk
 ```
 
-`@webcontainer/api` is an optional peer dependency, needed only if you use the
-WebContainer adapter.
+Use `@hudhod/webcontainer` when a browser host needs WebContainer adapters.
 
 ## Entry points
 
-| Import                      | Environment | Contents                                    |
-| --------------------------- | ----------- | ------------------------------------------- |
-| `@hudhod/core`              | Any         | Services, base primitives, extension host   |
-| `@hudhod/core/webcontainer` | Browser     | The WebContainer-backed file system adapter |
+| Import                 | Environment | Contents                                     |
+| ---------------------- | ----------- | -------------------------------------------- |
+| `@hudhod/core`         | Any         | Services, runtime factory, extension host    |
+| `@hudhod/webcontainer` | Browser     | WebContainer filesystem and process adapters |
 
 The split is deliberate. `@webcontainer/api` requires `SharedArrayBuffer` and
-cross-origin isolation, so it cannot load in Node. Keeping it behind a separate
-entry point means the main entry stays importable from tests, scripts, and
+cross-origin isolation, so it cannot load in Node. Keeping those adapters in a
+separate package means the main entry stays importable from tests, scripts, and
 server code — which is what makes the runtime testable without a browser.
 
 ```ts
@@ -35,7 +34,7 @@ server code — which is what makes the runtime testable without a browser.
 import { DisposableStore, Emitter } from "@hudhod/core";
 
 // Browser only.
-import { WebContainerFileSystemProvider } from "@hudhod/core/webcontainer";
+import { createWebContainerServices } from "@hudhod/webcontainer";
 ```
 
 ## Base primitives
@@ -132,15 +131,22 @@ and automatically disposes resources pushed onto `context.subscriptions` when
 an extension deactivates.
 
 ```ts
-import { InProcessExtensionHost } from "@hudhod/core";
+import { createHudhodRuntime } from "@hudhod/core";
 
-const host = new InProcessExtensionHost(hudhodApi);
-host.register(extension);
-await host.activateByEvent("onStartup");
+const runtime = createHudhodRuntime({
+  fileSystemProvider,
+  processSpawner,
+  windowUiProvider,
+});
+runtime.extensions.register(extension);
+await runtime.extensions.activateByEvent("onStartup");
 ```
 
 Concurrent activation triggers are deduplicated, so an extension's `activate()`
 hook runs once even if a view and command arrive together.
+
+For a React/Dockview host, use `createHudhodReactHost()` and `HudhodWorkbench`
+from `@hudhod/react`. See [COMPOSABLE-IDE-DEVELOPMENT.md](../../COMPOSABLE-IDE-DEVELOPMENT.md).
 
 ## Development
 
