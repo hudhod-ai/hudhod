@@ -19,6 +19,23 @@ import { createContext, useContext } from "react";
 import type { ComponentType, ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 
+export {
+  createHudhodReactHost,
+  type CreateHudhodReactHostOptions,
+  type HudhodReactHost,
+  type HudhodReactHostUi,
+  type HudhodReactPanelController,
+  type HudhodReactRenderer,
+} from "./host";
+export {
+  HudhodActivityBar,
+  HudhodWorkbench,
+  type HudhodActivityBarItemProps,
+  type HudhodActivityBarOptions,
+  type HudhodActivityBarPanel,
+  type HudhodWorkbenchProps,
+} from "./workbench";
+
 const HudhodContext = createContext<HudhodApi | undefined>(undefined);
 
 /** Makes the hudhod API available to a React tree. */

@@ -35,6 +35,17 @@ See [EXTENSION-DEVELOPMENT.md](./EXTENSION-DEVELOPMENT.md) for comprehensive doc
 - Complete example: the built-in "New File" extension
 - Best practices for lazy activation, error handling, and cleanup
 
+## Composable IDE Hosts
+
+See [COMPOSABLE-IDE-DEVELOPMENT.md](./COMPOSABLE-IDE-DEVELOPMENT.md) when composing a new IDE
+from the packages or changing host/runtime boundaries.
+
+- Put reusable React workbench components and React host code in `packages/react`.
+- Put WebContainer-specific adapters in `packages/webcontainer`.
+- Keep `packages/core` framework- and environment-agnostic.
+- Keep product persistence, editor state, dialogs, extension catalogs, and visual policy in the
+  consuming application rather than copying `components/ide/IdeWorkspace.tsx`.
+
 ## Package responsibilities
 
 ### `packages/core`

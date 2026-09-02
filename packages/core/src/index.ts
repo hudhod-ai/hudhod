@@ -61,6 +61,11 @@ export type {
   SpawnerOptions,
 } from "./process/spawner";
 export { SearchService } from "./search/search-service";
+export { createHudhodRuntime } from "./runtime/runtime";
+export type {
+  CreateHudhodRuntimeOptions,
+  HudhodRuntime,
+} from "./runtime/runtime";
 export {
   ServiceRegistry,
   createServiceIdentifier,

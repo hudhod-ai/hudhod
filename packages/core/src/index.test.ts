@@ -32,6 +32,7 @@ describe("@hudhod/core public runtime API", () => {
       "WindowService",
       "basename",
       "createError",
+      "createHudhodRuntime",
       "createServiceIdentifier",
       "createWorkspaceConfig",
       "directoryNotEmpty",

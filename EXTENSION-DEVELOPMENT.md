@@ -2,6 +2,10 @@
 
 Extensions are the primary way to customize and extend the Hudhod IDE. This guide covers extension architecture, naming conventions, the manifest format, activation events, and available APIs.
 
+For composing a host IDE from Hudhod packages, see
+[COMPOSABLE-IDE-DEVELOPMENT.md](./COMPOSABLE-IDE-DEVELOPMENT.md). This guide is for extension
+authors.
+
 ## Table of Contents
 
 - [Naming Conventions](#naming-conventions)
@@ -72,10 +76,15 @@ The extension system is built on three tiers:
    - Environment-agnostic (testable in Node)
    - Not directly consumed by extensions
 
-3. **App** (`lib/hudhod/workspace.ts`, `components/ide/IdeWorkspace.tsx`) — Composition
-   - Creates HudhodApi instance
-   - Registers extensions
-   - Bridges React components to core services
+3. **React** (`packages/react`) — React bindings and reusable Dockview workbench
+
+- React panel/view helpers and the composed React host
+- Product UI enters through the host UI adapter
+
+4. **Environment adapters** (`packages/webcontainer`) — Runtime-specific providers
+
+- WebContainer filesystem and process adapters
+- Other environments can provide `FileSystemProvider` and `ProcessSpawner` implementations
 
 ### Extension Lifecycle
 

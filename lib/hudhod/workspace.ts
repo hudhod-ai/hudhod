@@ -8,53 +8,13 @@
  * process registries on every render.
  */
 
-import {
-  CommandRegistry,
-  DiffService,
-  FileSystemService,
-  InProcessExtensionHost,
-  KeybindingRegistry,
-  PanelRegistry,
-  ProcessService,
-  SearchService,
-  ViewRegistry,
-  WindowService,
-} from "@hudhod/core";
-import type { HudhodApi } from "@hudhod/sdk";
-import {
-  WebContainerFileSystemProvider,
-  WebContainerProcessSpawner,
-} from "@hudhod/core/webcontainer";
+import { createHudhodRuntime, type HudhodRuntime } from "@hudhod/core";
+import { createWebContainerServices } from "@hudhod/webcontainer";
 import type { WebContainer } from "@webcontainer/api";
 import { createWindowUiProvider } from "./window-bridge";
 
 /** The headless services backing one mounted WebContainer workspace. */
-export interface HudhodWorkspaceRuntime {
-  /** File access and watcher events. */
-  readonly fs: FileSystemService;
-  /** Glob and content search. */
-  readonly search: SearchService;
-  /** Text and file comparison. */
-  readonly diff: DiffService;
-  /** Multi-process command execution. */
-  readonly process: ProcessService;
-  /** Command catalog for UI and extensions. */
-  readonly commands: CommandRegistry;
-  /** Keybinding registry. */
-  readonly keybindings: KeybindingRegistry;
-  /** Panels contributed by extensions. */
-  readonly panels: PanelRegistry;
-  /** Views contributed into extension-owned containers. */
-  readonly views: ViewRegistry;
-  /** Window and UI operations. */
-  readonly window: WindowService;
-  /** Extension host for lazy loading and activation. */
-  readonly extensions: InProcessExtensionHost;
-  /** Full API surface for extensions. */
-  readonly api: HudhodApi;
-  /** Releases every workspace-scoped service. */
-  dispose(): void;
-}
+export type HudhodWorkspaceRuntime = HudhodRuntime;
 
 const runtimes = new WeakMap<WebContainer, HudhodWorkspaceRuntime>();
 
@@ -74,77 +34,17 @@ export function getHudhodWorkspace(
   const existing = runtimes.get(container);
   if (existing) return existing;
 
-  const fs = new FileSystemService(
-    new WebContainerFileSystemProvider(container),
-  );
-
-  // Detect platform for keybindings
   const platform =
     typeof navigator !== "undefined" &&
     /Mac|iPhone|iPad|iPod/.test(navigator.platform)
       ? "mac"
       : "other";
 
-  const keybindings = new KeybindingRegistry(platform);
-  const panels = new PanelRegistry();
-  const views = new ViewRegistry();
-  const window = new WindowService(createWindowUiProvider());
-  const commands = new CommandRegistry();
-  const search = new SearchService(fs);
-  const diff = new DiffService(fs);
-  const process = new ProcessService(new WebContainerProcessSpawner(container));
-
-  const api: HudhodApi = {
-    version: "0.1.0",
-    fs,
-    workspace: {
-      // Stub: workspace not yet implemented
-      roots: [],
-      onDidChangeRoots: () => ({ dispose: () => {} }),
-    } as any,
-    search,
-    diff,
-    process,
-    terminal: {
-      // Stub: terminal not yet implemented
-      create: async () => {
-        throw new Error("Terminal API not yet implemented");
-      },
-      terminals: [],
-      onDidOpenTerminal: () => ({ dispose: () => {} }),
-      onDidCloseTerminal: () => ({ dispose: () => {} }),
-    } as any,
-    commands,
-    keybindings,
-    window,
-  };
-
-  const extensions = new InProcessExtensionHost(api, { panels, views });
-
-  const runtime: HudhodWorkspaceRuntime = {
-    fs,
-    search,
-    diff,
-    process,
-    commands,
-    keybindings,
-    panels,
-    views,
-    window,
-    extensions,
-    api,
-    dispose() {
-      fs.dispose();
-      process.dispose();
-      commands.dispose();
-      keybindings.dispose();
-      panels.dispose();
-      views.dispose();
-      window.dispose();
-      extensions.dispose();
-      runtimes.delete(container);
-    },
-  };
+  const runtime = createHudhodRuntime({
+    ...createWebContainerServices(container),
+    windowUiProvider: createWindowUiProvider(),
+    platform,
+  });
   runtimes.set(container, runtime);
   return runtime;
 }

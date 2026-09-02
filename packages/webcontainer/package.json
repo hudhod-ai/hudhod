@@ -1,0 +1,42 @@
+{
+  "name": "@hudhod/webcontainer",
+  "version": "0.0.0",
+  "description": "WebContainer adapters for the headless Hudhod runtime.",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hudhod/core": "workspace:*",
+    "@hudhod/sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "@webcontainer/api": "^1.6.4"
+  },
+  "devDependencies": {
+    "@webcontainer/api": "^1.6.4",
+    "tsdown": "^0.15.6",
+    "typescript": "^5.7.2"
+  }
+}

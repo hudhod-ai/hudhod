@@ -29,6 +29,9 @@ importers:
       '@hudhod/sdk':
         specifier: workspace:*
         version: link:packages/sdk
+      '@hudhod/webcontainer':
+        specifier: workspace:*
+        version: link:packages/webcontainer
       '@monaco-editor/react':
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.56.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -213,6 +216,9 @@ importers:
 
   packages/react:
     dependencies:
+      '@hudhod/core':
+        specifier: workspace:*
+        version: link:../core
       '@hudhod/sdk':
         specifier: workspace:*
         version: link:../sdk
@@ -223,6 +229,12 @@ importers:
       '@types/react-dom':
         specifier: ^19
         version: 19.2.5(@types/react@19.2.18)
+      dockview-react:
+        specifier: ^8.2.0
+        version: 8.2.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      lucide-react:
+        specifier: ^1.34.0
+        version: 1.37.0(react@19.2.8)
       react:
         specifier: 19.2.8
         version: 19.2.8
@@ -234,6 +246,25 @@ importers:
         version: 5.9.3
 
   packages/sdk: {}
+
+  packages/webcontainer:
+    dependencies:
+      '@hudhod/core':
+        specifier: workspace:*
+        version: link:../core
+      '@hudhod/sdk':
+        specifier: workspace:*
+        version: link:../sdk
+    devDependencies:
+      '@webcontainer/api':
+        specifier: ^1.6.4
+        version: 1.6.4
+      tsdown:
+        specifier: ^0.15.6
+        version: 0.15.12(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(supports-color@7.2.0)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
 
 packages:
 
