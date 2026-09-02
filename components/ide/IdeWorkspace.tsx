@@ -3,16 +3,21 @@
 import type { FileSystemTree } from "@webcontainer/api";
 import type { CommandRegistry } from "@hudhod/core";
 import newFileExtension from "@hudhod/extension-new-file";
+import outlineExtension from "@hudhod/extension-outline";
 import dynamic from "next/dynamic";
 import { CommandIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { resetLayout } from "@/components/dockview/panelRegistry";
 import { TooltipProvider } from "@/components/ui/SimpleTooltip";
 import { WindowUiHost } from "@/components/ide/WindowUiHost";
 import { useColorMode } from "@/hooks/useColorMode";
 import { createClient } from "@/lib/client";
 import { registerBuiltinCommands } from "@/lib/hudhod/builtin-commands";
+import {
+  openDefaultLayoutPanels,
+  registerBuiltinPanelExtensions,
+  resetWorkspaceLayout,
+} from "@/lib/hudhod/builtin-extensions";
 import { readExplorerTree } from "@/lib/hudhod/file-tree";
 import { createWebContainerUiHandlers } from "@/lib/hudhod/ui-bridge";
 import {
@@ -24,7 +29,6 @@ import { getWebContainer } from "@/lib/webcontainer/boot";
 import { attachWebContainerEvents } from "@/lib/webcontainer/events";
 import { mountAndIndex, exportFileSystem } from "@/lib/webcontainer/filesystem";
 import { runInstall, runDev, restartDev } from "@/lib/webcontainer/process";
-import { useDockviewStore } from "@/store/useDockviewStore";
 import { useFileSystemStore } from "@/store/useFileSystemStore";
 import { useHudhodWorkspaceStore } from "@/store/useHudhodWorkspaceStore";
 import { useLogsStore } from "@/store/useLogsStore";
@@ -78,7 +82,6 @@ export function IdeWorkspace({
   const status = useWebContainerStore((state) => state.status);
   const error = useWebContainerStore((state) => state.error);
   const { mode, toggle: toggleTheme } = useColorMode();
-  const dockviewApi = useDockviewStore((state) => state.api);
   const bootstrapped = useRef(false);
   const [restarting, setRestarting] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -96,6 +99,7 @@ export function IdeWorkspace({
     let cleanupFileWatch: (() => void) | undefined;
     let cleanupCommands: (() => void) | undefined;
     let cleanupPanelWatch: (() => void) | undefined;
+    let cleanupViewWatch: (() => void) | undefined;
 
     async function bootstrap() {
       const setStatus = useWebContainerStore.getState().setStatus;
@@ -143,21 +147,28 @@ export function IdeWorkspace({
         (window as any).__hudhod = useHudhodWorkspaceStore;
         // Register the sample extension
         ws.extensions.register(newFileExtension);
+        ws.extensions.register(outlineExtension);
+        registerBuiltinPanelExtensions(ws);
         await ws.extensions.activateByEvent("onStartup");
+        await openDefaultLayoutPanels(ws);
 
         useHudhodWorkspaceStore.getState().setPanels(ws.panels.getPanels());
         const panelWatch = ws.panels.onDidChangePanels((panels) =>
           useHudhodWorkspaceStore.getState().setPanels(panels),
         );
         cleanupPanelWatch = () => panelWatch.dispose();
+        useHudhodWorkspaceStore.getState().setViews(ws.views.getViews());
+        const viewWatch = ws.views.onDidChangeViews((views) =>
+          useHudhodWorkspaceStore.getState().setViews(views),
+        );
+        cleanupViewWatch = () => viewWatch.dispose();
 
         const refreshExplorer = async () => {
           useFileSystemStore.getState().setTree(await readExplorerTree(ws.fs));
         };
 
         const builtinCommands = registerBuiltinCommands(
-          ws.commands,
-          ws.keybindings,
+          ws,
           () => setCommandPaletteOpen(true),
           refreshExplorer,
         );
@@ -182,8 +193,10 @@ export function IdeWorkspace({
       cleanupFileWatch?.();
       cleanupCommands?.();
       cleanupPanelWatch?.();
+      cleanupViewWatch?.();
       useHudhodWorkspaceStore.getState().setWorkspace(null);
       useHudhodWorkspaceStore.getState().setPanels([]);
+      useHudhodWorkspaceStore.getState().setViews([]);
       workspaceRef.current?.dispose();
     };
   }, []);
@@ -412,7 +425,10 @@ export function IdeWorkspace({
             ) : null}
             <button
               type="button"
-              onClick={() => dockviewApi && resetLayout(dockviewApi)}
+              onClick={() => {
+                const ws = workspaceRef.current;
+                if (ws) void resetWorkspaceLayout(ws);
+              }}
               className="rounded px-2 py-1 text-[12px] text-zinc-600 hover:bg-zinc-200/60 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               Reset Layout

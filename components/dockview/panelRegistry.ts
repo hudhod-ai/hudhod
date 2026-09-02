@@ -1,12 +1,8 @@
 import type { PanelLocation } from "@hudhod/sdk";
 import type { AddPanelOptions, Direction, DockviewApi } from "dockview-react";
 
-export type BuiltinPanelId =
-  | "explorer"
-  | "editor"
-  | "preview"
-  | "logs"
-  | "terminal";
+/** `editor` is the one panel the workbench owns natively; every other panel is contributed. */
+export type BuiltinPanelId = "editor";
 
 /** Extension panel ids are extension-defined strings; built-ins are the closed union above. */
 export type PanelId = string;
@@ -22,6 +18,7 @@ export interface PanelDefinition {
   title: string;
   component: string;
   getPosition: (api: DockviewApi) => AddPanelOptions["position"];
+  location?: PanelLocation;
   initialWidth?: number;
   initialHeight?: number;
 }
@@ -39,11 +36,30 @@ function splitFrom(
   return referencePanel ? { referencePanel, direction } : undefined;
 }
 
+/** First already-open panel docked at the same location, so same-location panels tab together. */
+function openPanelAtLocation(
+  api: DockviewApi,
+  location: PanelLocation,
+  selfId: string,
+): string | undefined {
+  for (const def of DYNAMIC_PANELS.values()) {
+    if (def.id === selfId || def.location !== location) continue;
+    if (api.getPanel(def.id)) return def.id;
+  }
+  return undefined;
+}
+
 /** Maps a contributed panel's dock location to a Dockview split direction off the editor. */
 function positionForLocation(
   api: DockviewApi,
   location: PanelLocation,
+  selfId: string,
 ): AddPanelOptions["position"] {
+  if (location !== "center") {
+    const sibling = openPanelAtLocation(api, location, selfId);
+    if (sibling) return { referencePanel: sibling, direction: "within" };
+  }
+
   switch (location) {
     case "left":
       return splitFrom(api, "editor", "left");
@@ -53,7 +69,9 @@ function positionForLocation(
       return splitFrom(api, "editor", "below");
     case "center": {
       const referencePanel = api.getPanel("editor")?.id ?? api.panels[0]?.id;
-      return referencePanel ? { referencePanel, direction: "within" } : undefined;
+      return referencePanel
+        ? { referencePanel, direction: "within" }
+        : undefined;
     }
   }
 }
@@ -65,41 +83,7 @@ export const PANEL_DEFINITIONS: PanelDefinition[] = [
     component: "editor",
     getPosition: () => undefined,
   },
-  {
-    id: "explorer",
-    title: "Explorer",
-    component: "explorer",
-    getPosition: (api) => splitFrom(api, "editor", "left"),
-  },
-  {
-    id: "preview",
-    title: "Preview",
-    component: "preview",
-    getPosition: (api) => splitFrom(api, "editor", "right"),
-  },
-  {
-    id: "logs",
-    title: "Logs",
-    component: "logs",
-    getPosition: (api) => splitFrom(api, "editor", "below"),
-  },
-  {
-    id: "terminal",
-    title: "Terminal",
-    component: "terminal",
-    getPosition: (api) =>
-      api.getPanel("logs")
-        ? { referencePanel: "logs", direction: "within" }
-        : splitFrom(api, "editor", "below"),
-  },
 ];
-
-/** Reference-panel widths only apply the first time a panel is added. */
-const INITIAL_SIZE: Partial<Record<BuiltinPanelId, { initialWidth?: number; initialHeight?: number }>> = {
-  explorer: { initialWidth: 260 },
-  preview: { initialWidth: 420 },
-  logs: { initialHeight: 220 },
-};
 
 /** Panels contributed by extensions, registered/unregistered as extensions (de)activate. */
 const DYNAMIC_PANELS = new Map<string, PanelDefinition>();
@@ -124,7 +108,8 @@ export function buildExtensionPanelDefinition(
     id,
     title,
     component: EXTENSION_PANEL_HOST,
-    getPosition: (api) => positionForLocation(api, location),
+    getPosition: (api) => positionForLocation(api, location, id),
+    location,
     initialWidth,
     initialHeight,
   };
@@ -139,7 +124,6 @@ export function buildInitialLayout(api: DockviewApi) {
       tabComponent: PANEL_TAB_COMPONENT,
       title: def.title,
       position: def.getPosition(api),
-      ...INITIAL_SIZE[def.id as BuiltinPanelId],
     });
   }
 }
@@ -159,9 +143,8 @@ export function openOrFocusPanel(api: DockviewApi, id: PanelId) {
     tabComponent: PANEL_TAB_COMPONENT,
     title: def.title,
     position: def.getPosition(api),
-    ...(PANEL_DEFINITIONS.includes(def)
-      ? INITIAL_SIZE[def.id as BuiltinPanelId]
-      : { initialWidth: def.initialWidth, initialHeight: def.initialHeight }),
+    initialWidth: def.initialWidth,
+    initialHeight: def.initialHeight,
   });
 }
 
@@ -169,6 +152,10 @@ export function closePanel(api: DockviewApi, id: PanelId) {
   api.getPanel(id)?.api.close();
 }
 
+/**
+ * Synchronously resets Dockview to the built-in layout (editor only). Contributed panels
+ * are re-opened through their extensions by `resetWorkspaceLayout` in lib/hudhod.
+ */
 export function resetLayout(api: DockviewApi) {
   // Snapshot first: removePanel mutates the live api.panels collection.
   const panels = Array.from(api.panels);

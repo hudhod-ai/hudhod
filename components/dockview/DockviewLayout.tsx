@@ -11,26 +11,22 @@ import {
 import { useColorMode } from "@/hooks/useColorMode";
 import { useDockviewStore } from "@/store/useDockviewStore";
 
-import { buildInitialLayout, EXTENSION_PANEL_HOST, PANEL_TAB_COMPONENT } from "./panelRegistry";
+import {
+  buildInitialLayout,
+  EXTENSION_PANEL_HOST,
+  PANEL_TAB_COMPONENT,
+} from "./panelRegistry";
 import { EditorPanel } from "./panels/EditorPanel";
-import { ExplorerPanel } from "./panels/ExplorerPanel";
-import { ExtensionPanelHost } from "./panels/ExtensionPanelHost";
-import { LogsPanel } from "./panels/LogsPanel";
+import { ViewContainerHost } from "./panels/ViewContainerHost";
 import { PanelTab } from "./panels/PanelTab";
-import { PreviewPanel } from "./panels/PreviewPanel";
-import { TerminalPanel } from "./panels/TerminalPanel";
 import { dockviewThemeFor } from "./theme";
 
 const components: Record<
   string,
   (props: IDockviewPanelProps) => React.ReactElement
 > = {
-  explorer: ExplorerPanel,
   editor: EditorPanel,
-  logs: LogsPanel,
-  terminal: TerminalPanel,
-  preview: PreviewPanel,
-  [EXTENSION_PANEL_HOST]: ExtensionPanelHost,
+  [EXTENSION_PANEL_HOST]: ViewContainerHost,
 };
 
 const tabComponents = {

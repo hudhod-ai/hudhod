@@ -49,12 +49,40 @@ export interface PanelContribution {
   readonly location?: "left" | "right" | "bottom" | "center";
 }
 
+/** An activity-bar container that can hold one or more contributed views. */
+export interface ViewContainerContribution {
+  /** Unique identifier, matching the id passed to `registerPanel`. */
+  readonly id: string;
+  /** Tab title. */
+  readonly title: string;
+  /** Opaque to the SDK; the host application defines what a valid icon value is. */
+  readonly icon?: unknown;
+  /** Preferred dock location. */
+  readonly location?: "left" | "right" | "bottom" | "center";
+}
+
+/** A collapsible body section contributed to a view container. */
+export interface ViewContribution {
+  /** Unique identifier, matching the id passed to `registerView`. */
+  readonly id: string;
+  /** Header text shown by the workbench. */
+  readonly title: string;
+  /** Id of the view container that owns this view. */
+  readonly container: string;
+  /** Sort order within the container; unordered views follow ordered ones. */
+  readonly order?: number;
+}
+
 /** Static declarations an extension makes to the workbench. */
 export interface Contributions {
   /** Commands the extension provides. */
   readonly commands?: readonly CommandContribution[];
   /** Panels the extension provides. */
   readonly panels?: readonly PanelContribution[];
+  /** Activity-bar containers the extension provides. */
+  readonly viewContainers?: readonly ViewContainerContribution[];
+  /** Accordion views the extension provides. */
+  readonly views?: readonly ViewContribution[];
   /** Keybindings the extension provides. */
   readonly keybindings?: readonly KeybindingContribution[];
 }

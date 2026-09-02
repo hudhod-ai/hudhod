@@ -31,6 +31,8 @@ export type {
   ExtensionContext,
   ExtensionManifest,
   PanelContribution,
+  ViewContainerContribution,
+  ViewContribution,
 } from "./extension";
 export type {
   DeleteOptions,
@@ -71,6 +73,7 @@ export type {
   QuickPickItem,
   QuickPickOptions,
   RegisterPanelOptions,
+  RegisterViewOptions,
   WindowApi,
 } from "./window";
 export type {

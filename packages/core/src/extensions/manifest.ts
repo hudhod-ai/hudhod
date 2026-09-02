@@ -35,6 +35,20 @@ const panelContribution = z.object({
   location: z.enum(["left", "right", "bottom", "center"]).optional(),
 });
 
+const viewContainerContribution = z.object({
+  id: z.string().min(1).max(256),
+  title: z.string().min(1).max(256),
+  icon: z.unknown().optional(),
+  location: z.enum(["left", "right", "bottom", "center"]).optional(),
+});
+
+const viewContribution = z.object({
+  id: z.string().min(1).max(256),
+  title: z.string().min(1).max(256),
+  container: z.string().min(1).max(256),
+  order: z.number().finite().optional(),
+});
+
 const keybindingContribution = z.object({
   command: z.string().min(1),
   key: z
@@ -90,6 +104,8 @@ export const extensionManifestSchema = z
       .object({
         commands: z.array(commandContribution).optional(),
         panels: z.array(panelContribution).optional(),
+        viewContainers: z.array(viewContainerContribution).optional(),
+        views: z.array(viewContribution).optional(),
         keybindings: z.array(keybindingContribution).optional(),
       })
       .optional(),
@@ -99,6 +115,11 @@ export const extensionManifestSchema = z
       manifest.contributes?.commands?.map((command) => command.id) ?? [];
     const panelIds =
       manifest.contributes?.panels?.map((panel) => panel.id) ?? [];
+    const viewContainerIds =
+      manifest.contributes?.viewContainers?.map((container) => container.id) ??
+      [];
+    const views = manifest.contributes?.views ?? [];
+    const viewIds = views.map((view) => view.id);
     const keybindings = manifest.contributes?.keybindings ?? [];
 
     if (new Set(commandIds).size !== commandIds.length) {
@@ -115,7 +136,20 @@ export const extensionManifestSchema = z
         message: "panel contribution ids must be unique",
       });
     }
-
+    if (new Set(viewContainerIds).size !== viewContainerIds.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["contributes", "viewContainers"],
+        message: "view container contribution ids must be unique",
+      });
+    }
+    if (new Set(viewIds).size !== viewIds.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["contributes", "views"],
+        message: "view contribution ids must be unique",
+      });
+    }
     // Validate keybindings reference existing commands
     for (const [i, kb] of keybindings.entries()) {
       if (!commandIds.includes(kb.command)) {

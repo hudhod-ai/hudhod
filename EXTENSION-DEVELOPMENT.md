@@ -24,11 +24,13 @@ Extension IDs are namespaced identifiers used internally by the IDE. They must b
 **Format**: `{namespace}.{feature-name}`
 
 **Examples**:
+
 - `hudhod.new-file` — built-in file creation
 - `hudhod.workbench.showExplorer` — built-in explorer command
 - `user.custom-linter` — hypothetical custom extension
 
 **Rules**:
+
 - Use lowercase letters, numbers, and dots only
 - Namespace should reflect the publisher or domain
 - Feature name should be descriptive but concise
@@ -41,11 +43,13 @@ Packages are published as npm packages under the `@hudhod` scope.
 **Format**: `@hudhod/extension-{feature-name}`
 
 **Examples**:
+
 - `@hudhod/extension-new-file`
 - `@hudhod/extension-prettier`
 - `@hudhod/extension-eslint`
 
 **Rules**:
+
 - Use kebab-case (hyphens, not underscores)
 - Start with `extension-` prefix for clarity
 - Keep the name short and memorable
@@ -116,22 +120,26 @@ packages/extension-new-file/
 ### File Descriptions
 
 **`src/index.ts`**: Main extension file
+
 - Exports a single default export: the extension definition
 - Uses `defineExtension()` helper from `@hudhod/sdk`
 - Defines manifest and `activate()` function
 
 **`package.json`**: Standard npm package metadata
+
 - `name`: `@hudhod/extension-{feature}`
 - `version`: semver (starting at `0.0.0` for development)
 - `description`: Short description of what the extension does
 - `dependencies`: Should minimize to `@hudhod/sdk` only
 
 **`tsconfig.json`**: TypeScript settings
+
 - Target: `ES2020+` (modern JavaScript, available in modern browsers)
 - Module: `ESM` (ECMAScript modules)
 - Strict mode: enabled (`strict: true`)
 
 **`tsdown.config.ts`**: Rolldown bundler configuration
+
 - Entry: `src/index.ts`
 - Output: `dist/index.js` and `dist/index.d.ts`
 - Handles tree-shaking and minification
@@ -148,11 +156,11 @@ The manifest is a `ExtensionManifest` object that declares what an extension con
   name: "New File",                                 // Display name
   version: "0.0.0",                                 // Semantic version
   description: "Create a new file with Ctrl+N",    // Short description
-  
+
   activationEvents: [                              // When to activate
     "onCommand:hudhod.newFile.create"              // Activated on command
   ],
-  
+
   contributes: {
     commands: [                                    // Available commands
       {
@@ -175,12 +183,14 @@ The manifest is a `ExtensionManifest` object that declares what an extension con
 ### Key Fields
 
 #### `id`
+
 - **Type**: `string`
 - **Required**: Yes
 - **Constraints**: Must be unique, lowercase with dots
 - **Used for**: Extension identification, lazy activation triggers
 
 #### `activationEvents`
+
 - **Type**: `string[]`
 - **Options**:
   - `"onStartup"` — Activate when IDE starts
@@ -190,6 +200,7 @@ The manifest is a `ExtensionManifest` object that declares what an extension con
 - **Performance**: Use specific events to keep memory low (lazy loading)
 
 #### `contributes.commands`
+
 - **Type**: `CommandContribution[]`
 - **Fields**:
   - `id`: Unique command identifier
@@ -198,6 +209,7 @@ The manifest is a `ExtensionManifest` object that declares what an extension con
 - **Used for**: Command palette, keybinding targets
 
 #### `contributes.keybindings`
+
 - **Type**: `KeybindingContribution[]`
 - **Fields**:
   - `command`: Command ID to run
@@ -220,19 +232,19 @@ Extensions activate lazily based on **activation events** in their manifest. Thi
 
 ```typescript
 // Activate on startup (heavyweight extensions only)
-activationEvents: ["onStartup"]
+activationEvents: ["onStartup"];
 
 // Activate when user runs this command
-activationEvents: ["onCommand:my.extension.run"]
+activationEvents: ["onCommand:my.extension.run"];
 
 // Activate when user opens a TypeScript file
-activationEvents: ["onFileOpen:*.ts"]
+activationEvents: ["onFileOpen:*.ts"];
 
 // Activate when the "explorer" panel becomes visible
-activationEvents: ["onView:explorer"]
+activationEvents: ["onView:explorer"];
 
 // Multiple events: activate on any of them
-activationEvents: ["onStartup", "onCommand:my.command"]
+activationEvents: ["onStartup", "onCommand:my.command"];
 ```
 
 ### The `activate()` Function
@@ -240,17 +252,17 @@ activationEvents: ["onStartup", "onCommand:my.command"]
 ```typescript
 export default defineExtension({
   manifest: { ... },
-  
+
   activate(context: ExtensionContext) {
     const { subscriptions, hudhod } = context;
-    
+
     // Register commands
     subscriptions.push(
       hudhod.commands.registerCommand("my.command", async () => {
         // Command logic
       })
     );
-    
+
     // Register keybindings (optional, usually via manifest)
     subscriptions.push(
       hudhod.keybindings.registerKeybinding({
@@ -258,7 +270,7 @@ export default defineExtension({
         key: "ctrl+k"
       })
     );
-    
+
     // Subscribe to events
     subscriptions.push(
       hudhod.fs.onDidChangeFile((event) => {
@@ -270,6 +282,7 @@ export default defineExtension({
 ```
 
 **Context Properties**:
+
 - `subscriptions`: Array to collect `Disposable` objects for cleanup
 - `hudhod`: The `HudhodApi` instance (all available services)
 
@@ -278,6 +291,36 @@ export default defineExtension({
 ---
 
 ## Available APIs
+
+### View Containers And Views
+
+Use `contributes.panels` for a standalone Dockview panel. It remains a convenient
+single-view container and continues to provide its own activity-bar icon and body.
+
+Use `contributes.viewContainers` to declare an activity-bar container that can host
+multiple views. A `contributes.views` entry supplies a collapsible body section for a
+container. Its `container` may point to a container declared by another extension;
+for example, an extension can contribute a view to `explorer` without owning it.
+
+```typescript
+contributes: {
+  views: [{ id: "acme.todo.results", title: "TODO Results", container: "explorer", order: 100 }];
+}
+```
+
+View sections are ordered by ascending `order`. Views without an `order` follow ordered
+views, and equal values retain manifest registration order. The container opening process
+activates every extension with an `onView:<viewId>` event for its views, so view extensions
+stay lazy until their container is first opened. Register the body with `registerView`, or
+use `registerReactView` for React components:
+
+```tsx
+context.subscriptions.push(
+  registerReactView(context.hudhod, "acme.todo.results", ResultsView, {
+    title: "TODO Results",
+  }),
+);
+```
 
 ### File System (`hudhod.fs`)
 
@@ -312,14 +355,14 @@ const disposable = hudhod.commands.registerCommand(
   "my.command",
   async (arg1: string, arg2: number) => {
     // Command implementation
-  }
-)
+  },
+);
 
 // Execute a command
-await hudhod.commands.executeCommand("my.command", arg1, arg2)
+await hudhod.commands.executeCommand("my.command", arg1, arg2);
 
 // Query available commands
-const list = await hudhod.commands.getCommands()
+const list = await hudhod.commands.getCommands();
 ```
 
 ### Window UI (`hudhod.window`)
@@ -359,17 +402,10 @@ await hudhod.window.openFile(path: string)
 
 ```typescript
 // Find files by glob
-const files = await hudhod.search.findFiles(
-  "**/*.ts",
-  { exclude: "**/node_modules/**" }
-)
+const files = await hudhod.search.findFiles("**/*.ts", { exclude: "**/node_modules/**" });
 
 // Search file contents
-const results = await hudhod.search.findInFiles(
-  "TODO",
-  "**/*.ts",
-  { matchWholeWord: true }
-)
+const results = await hudhod.search.findInFiles("TODO", "**/*.ts", { matchWholeWord: true });
 ```
 
 ### Keybindings (`hudhod.keybindings`)
@@ -379,11 +415,11 @@ const results = await hudhod.search.findInFiles(
 const disposable = hudhod.keybindings.registerKeybinding({
   command: "my.command",
   key: "ctrl+alt+x",
-  mac: "cmd+alt+x"
-})
+  mac: "cmd+alt+x",
+});
 
 // Get all active keybindings
-const bindings = await hudhod.keybindings.getKeybindings()
+const bindings = await hudhod.keybindings.getKeybindings();
 ```
 
 ### Processes (`hudhod.process`)
@@ -392,16 +428,16 @@ const bindings = await hudhod.keybindings.getKeybindings()
 // Spawn a process
 const handle = await hudhod.process.spawn("npm", ["install"], {
   cwd: "/path/to/project",
-  timeout: 60000
-})
+  timeout: 60000,
+});
 
 // Get output and exit code
-const stdout = await handle.stdout  // string (accumulated)
-const stderr = await handle.stderr  // string (accumulated)
-const exitCode = await handle.exit  // number
+const stdout = await handle.stdout; // string (accumulated)
+const stderr = await handle.stderr; // string (accumulated)
+const exitCode = await handle.exit; // number
 
 // Kill process
-handle.kill()
+handle.kill();
 ```
 
 ---
@@ -430,6 +466,7 @@ The **New File** extension is a built-in example in `packages/extension-new-file
 ```
 
 **Why these settings**:
+
 - `onCommand:...` activation: Only load when user presses Ctrl+N
 - Keybindings in manifest: Registered before activation so IDE can trigger it
 - Specific category: Helps organize command palette
@@ -471,6 +508,7 @@ activate(context) {
 ```
 
 **Flow**:
+
 1. User presses Ctrl+N
 2. IDE resolves keybinding → activates extension → executes command
 3. Command prompts for filename (input box)
@@ -487,10 +525,10 @@ Use specific activation events, not `onStartup`, to keep the IDE responsive.
 
 ```typescript
 // ❌ Bad: Slows down IDE startup
-activationEvents: ["onStartup"]
+activationEvents: ["onStartup"];
 
 // ✅ Good: Load only when needed
-activationEvents: ["onCommand:my.command", "onFileOpen:*.tsx"]
+activationEvents: ["onCommand:my.command", "onFileOpen:*.tsx"];
 ```
 
 ### 2. Minimal Dependencies
@@ -506,6 +544,7 @@ Limit npm dependencies to `@hudhod/sdk` only.
 ```
 
 If you need external libraries, bundle them:
+
 ```bash
 npm install lodash
 # In tsdown.config.ts, include it in rollup options
@@ -519,10 +558,7 @@ Always catch and report errors to the user.
 try {
   await hudhod.fs.createFile(path);
 } catch (error) {
-  await hudhod.window.showMessage(
-    `Failed to create file: ${error}`,
-    "error"
-  );
+  await hudhod.window.showMessage(`Failed to create file: ${error}`, "error");
 }
 ```
 
@@ -536,8 +572,8 @@ const filename = await hudhod.window.showInputBox({
     if (!value.trim()) return "Filename required";
     if (value.includes("..")) return "Invalid path";
     if (value.includes("\0")) return "Invalid character";
-    return undefined;  // OK
-  }
+    return undefined; // OK
+  },
 });
 ```
 
@@ -549,13 +585,11 @@ Use platform-appropriate keybindings.
 // ✅ Good: Consider both platforms
 keybindings: [
   { command: "my.save", key: "ctrl+s", mac: "cmd+s" },
-  { command: "my.format", key: "shift+alt+f", mac: "shift+option+f" }
-]
+  { command: "my.format", key: "shift+alt+f", mac: "shift+option+f" },
+];
 
 // ❌ Bad: Only Windows
-keybindings: [
-  { command: "my.save", key: "ctrl+s" }
-]
+keybindings: [{ command: "my.save", key: "ctrl+s" }];
 ```
 
 ### 6. Subscription Cleanup
@@ -580,12 +614,12 @@ Use reverse-domain notation for command IDs.
 
 ```typescript
 // ✅ Good
-"hudhod.new-file.create"
-"hudhod.prettier.format"
+"hudhod.new-file.create";
+"hudhod.prettier.format";
 
 // ❌ Bad: Generic
-"create"
-"format"
+"create";
+"format";
 ```
 
 ---
@@ -599,7 +633,7 @@ To test your extension:
 3. **Register in IdeWorkspace.tsx**:
    ```typescript
    import myExtension from "@hudhod/extension-my-feature";
-   
+
    ws.extensions.register(myExtension);
    ```
 4. **Start dev server**: `pnpm dev`

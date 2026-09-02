@@ -20,6 +20,7 @@ import type {
 
 import { DisposableStore } from "../base/disposable";
 import type { PanelRegistry } from "../panels/panel-registry";
+import type { ViewRegistry } from "../views/view-registry";
 import { parseExtensionManifest } from "./manifest";
 
 /** Current lifecycle state of a registered extension. */
@@ -53,7 +54,7 @@ interface RegisteredExtension {
  *
  * @example
  * ```ts
- * const host = new InProcessExtensionHost(hudhod, panels);
+ * const host = new InProcessExtensionHost(hudhod, { panels, views });
  * host.register(extension);
  * await host.activateByEvent("onStartup");
  * ```
@@ -61,12 +62,17 @@ interface RegisteredExtension {
 export class InProcessExtensionHost implements Disposable {
   readonly #hudhod: HudhodApi;
   readonly #panels: PanelRegistry;
+  readonly #views: ViewRegistry;
   readonly #extensions = new Map<string, RegisteredExtension>();
   #disposed = false;
 
-  constructor(hudhod: HudhodApi, panels: PanelRegistry) {
+  constructor(
+    hudhod: HudhodApi,
+    registries: { panels: PanelRegistry; views: ViewRegistry },
+  ) {
     this.#hudhod = hudhod;
-    this.#panels = panels;
+    this.#panels = registries.panels;
+    this.#views = registries.views;
   }
 
   /**
@@ -103,6 +109,24 @@ export class InProcessExtensionHost implements Disposable {
     const panels = manifest.contributes?.panels ?? [];
     for (const panel of panels) {
       const disp = this.#panels.registerPanel(panel, {
+        source: "extension",
+        extensionId: manifest.id,
+      });
+      registered.subscriptions.add(disp);
+    }
+
+    const viewContainers = manifest.contributes?.viewContainers ?? [];
+    for (const container of viewContainers) {
+      const disp = this.#panels.registerPanel(container, {
+        source: "extension",
+        extensionId: manifest.id,
+      });
+      registered.subscriptions.add(disp);
+    }
+
+    const views = manifest.contributes?.views ?? [];
+    for (const view of views) {
+      const disp = this.#views.registerView(view, {
         source: "extension",
         extensionId: manifest.id,
       });

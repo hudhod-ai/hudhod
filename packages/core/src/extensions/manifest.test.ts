@@ -38,10 +38,24 @@ describe("parseExtensionManifest", () => {
             location: "right",
           },
         ],
+        viewContainers: [
+          { id: "acme.todo-finder", title: "TODO Finder", location: "left" },
+        ],
+        views: [
+          {
+            id: "acme.todo-finder.results",
+            title: "Results",
+            container: "acme.todo-finder",
+            order: 10,
+          },
+        ],
       },
     });
 
     expect(manifest.contributes?.panels?.[0]?.location).toBe("right");
+    expect(manifest.contributes?.views?.[0]?.container).toBe(
+      "acme.todo-finder",
+    );
   });
 
   it("rejects an id without a publisher segment", () => {
@@ -90,6 +104,24 @@ describe("parseExtensionManifest", () => {
           panels: [
             { id: "acme.todo.view", title: "One" },
             { id: "acme.todo.view", title: "Two" },
+          ],
+        },
+      }),
+    ).toThrow(/unique/);
+  });
+
+  it("rejects duplicate view and view container ids", () => {
+    expect(() =>
+      parseExtensionManifest({
+        ...valid,
+        contributes: {
+          viewContainers: [
+            { id: "acme.todo", title: "One" },
+            { id: "acme.todo", title: "Two" },
+          ],
+          views: [
+            { id: "acme.todo.results", title: "One", container: "other" },
+            { id: "acme.todo.results", title: "Two", container: "other" },
           ],
         },
       }),

@@ -8,6 +8,7 @@
  */
 
 import type { WindowUiProvider } from "@hudhod/core";
+import type { ActiveEditor, PanelLocation } from "@hudhod/sdk";
 import {
   buildExtensionPanelDefinition,
   closePanel as closeDockviewPanel,
@@ -19,14 +20,32 @@ import { useFileSystemStore } from "@/store/useFileSystemStore";
 import { useWindowUiStore } from "@/store/useWindowUiStore";
 import { useDockviewStore } from "@/store/useDockviewStore";
 import { useExtensionPanelStore } from "@/store/useExtensionPanelStore";
+import { useExtensionViewStore } from "@/store/useExtensionViewStore";
 import { getWebContainer } from "@/lib/webcontainer/boot";
 import { getHudhodWorkspace } from "./workspace";
+
+/** Sidebar docks show one view at a time; the bottom dock tabs its panels together. */
+const EXCLUSIVE_LOCATIONS = new Set<PanelLocation>(["left", "right"]);
+
+function activeEditorFor(
+  state: ReturnType<typeof useFileSystemStore.getState>,
+): ActiveEditor | undefined {
+  if (!state.activePath) return undefined;
+  const tab = state.tabs.find(
+    (candidate) => candidate.path === state.activePath,
+  );
+  return tab ? { path: tab.path, dirty: tab.dirty } : undefined;
+}
 
 /** Opens (or focuses) a panel, activating its owning extension first so a renderer exists to mount. */
 async function openExtensionPanel(id: string): Promise<void> {
   const instance = await getWebContainer();
   const ws = getHudhodWorkspace(instance);
   await ws.extensions.activateByEvent(`onView:${id}`);
+  const views = ws.views.getViewsForContainer(id);
+  for (const view of views) {
+    await ws.extensions.activateByEvent(`onView:${view.id}`);
+  }
 
   const api = useDockviewStore.getState().api;
   if (!api) return;
@@ -51,6 +70,14 @@ async function openExtensionPanel(id: string): Promise<void> {
     ),
   );
   openOrFocusPanel(api, id);
+
+  // Added before evicting so the incoming panel joins the group and inherits its size.
+  if (EXCLUSIVE_LOCATIONS.has(location)) {
+    for (const panel of ws.panels.getPanels()) {
+      if (panel.id === id || panel.location !== location) continue;
+      api.getPanel(panel.id)?.api.close();
+    }
+  }
 }
 
 /**
@@ -90,6 +117,18 @@ export function createWindowUiProvider(): WindowUiProvider {
       };
     },
 
+    registerView(id, render, options) {
+      useExtensionViewStore.getState().registerRenderer(id, render, options);
+      let disposed = false;
+      return {
+        dispose: () => {
+          if (disposed) return;
+          disposed = true;
+          useExtensionViewStore.getState().unregisterRenderer(id);
+        },
+      };
+    },
+
     async openPanel(id) {
       await openExtensionPanel(id);
     },
@@ -110,34 +149,18 @@ export function createWindowUiProvider(): WindowUiProvider {
     },
 
     get activeEditor() {
-      const { activePath, tabs } = useFileSystemStore.getState();
-      if (!activePath) return undefined;
-      const tab = tabs.find((t) => t.path === activePath);
-      if (!tab) return undefined;
-      return {
-        path: activePath,
-        dirty: tab.dirty,
-      };
+      return activeEditorFor(useFileSystemStore.getState());
     },
 
     onDidChangeActiveEditor(listener) {
-      let prevActiveTab: { path: string; dirty: boolean } | undefined;
-      const unsubscribe = (useFileSystemStore.subscribe as any)(
-        (state: any) => {
-          const activeTab = state.tabs.find(
-            (t: any) => t.path === state.activePath,
-          );
-          return activeTab
-            ? { path: state.activePath, dirty: activeTab.dirty }
-            : undefined;
-        },
-        (activeTab: any) => {
-          if (JSON.stringify(activeTab) !== JSON.stringify(prevActiveTab)) {
-            prevActiveTab = activeTab;
-            listener(activeTab);
-          }
-        },
-      );
+      let previous = activeEditorFor(useFileSystemStore.getState());
+      const unsubscribe = useFileSystemStore.subscribe((state) => {
+        const next = activeEditorFor(state);
+        if (next?.path === previous?.path && next?.dirty === previous?.dirty)
+          return;
+        previous = next;
+        listener(next);
+      });
       return { dispose: unsubscribe };
     },
   };

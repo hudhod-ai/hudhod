@@ -8,17 +8,13 @@ import {
   type CommandRegistry,
 } from "@hudhod/core";
 
-import {
-  openOrFocusPanel,
-  resetLayout,
-} from "@/components/dockview/panelRegistry";
-import { useDockviewStore } from "@/store/useDockviewStore";
+import { resetWorkspaceLayout } from "@/lib/hudhod/builtin-extensions";
+import type { HudhodWorkspaceRuntime } from "@/lib/hudhod/workspace";
 
 /**
  * Adds core workbench commands to a workspace registry.
  *
- * @param commands The command registry to register workbench commands in.
- * @param keybindings The keybinding registry to register workbench keybindings in.
+ * @param ws The workspace runtime owning the command/keybinding registries and window API.
  * @param openCommandPalette Callback to open the command palette.
  * @param refreshExplorer Callback to refresh the file explorer.
  *
@@ -26,11 +22,12 @@ import { useDockviewStore } from "@/store/useDockviewStore";
  * preventing duplicate registrations after a route transition.
  */
 export function registerBuiltinCommands(
-  commands: CommandRegistry,
-  keybindings: KeybindingRegistry,
+  ws: HudhodWorkspaceRuntime,
   openCommandPalette: () => void,
   refreshExplorer?: () => Promise<void>,
 ): DisposableStore {
+  const commands: CommandRegistry = ws.commands;
+  const keybindings: KeybindingRegistry = ws.keybindings;
   const registrations = new DisposableStore();
 
   for (const [id, title, panelId] of [
@@ -42,9 +39,8 @@ export function registerBuiltinCommands(
     registrations.add(
       commands.registerCommand(
         id,
-        () => {
-          const api = useDockviewStore.getState().api;
-          if (api) openOrFocusPanel(api, panelId);
+        async () => {
+          await ws.api.window.openPanel(panelId);
         },
         { title, category: "Workbench" },
       ),
@@ -54,9 +50,8 @@ export function registerBuiltinCommands(
   registrations.add(
     commands.registerCommand(
       "hudhod.workbench.resetLayout",
-      () => {
-        const api = useDockviewStore.getState().api;
-        if (api) resetLayout(api);
+      async () => {
+        await resetWorkspaceLayout(ws);
       },
       { title: "Reset Layout", category: "Workbench" },
     ),

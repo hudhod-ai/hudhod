@@ -1,0 +1,42 @@
+{
+  "name": "@hudhod/extension-outline",
+  "version": "0.0.0",
+  "description": "Example extension contributing a sidebar panel that takes over the Explorer's slot",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.tsx",
+      "default": "./src/index.tsx"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hudhod/react": "workspace:*",
+    "@hudhod/sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "react": "19.2.8",
+    "typescript": "^5.7.2"
+  }
+}

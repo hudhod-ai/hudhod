@@ -2,12 +2,16 @@ import type { Extension, HudhodApi } from "@hudhod/sdk";
 import { describe, expect, it, vi } from "vitest";
 
 import { PanelRegistry } from "../panels/panel-registry";
+import { ViewRegistry } from "../views/view-registry";
 import { InProcessExtensionHost } from "./extension-host";
 
 const hudhod = {} as HudhodApi;
 
 function createHost(panels = new PanelRegistry()): InProcessExtensionHost {
-  return new InProcessExtensionHost(hudhod, panels);
+  return new InProcessExtensionHost(hudhod, {
+    panels,
+    views: new ViewRegistry(),
+  });
 }
 
 function extension(overrides: Partial<Extension> = {}): Extension {

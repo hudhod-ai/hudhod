@@ -8,7 +8,13 @@
  * @packageDocumentation
  */
 
-import type { Disposable, HudhodApi, RegisterPanelOptions } from "@hudhod/sdk";
+import type {
+  Disposable,
+  HudhodApi,
+  PanelRenderer,
+  RegisterPanelOptions,
+  RegisterViewOptions,
+} from "@hudhod/sdk";
 import { createContext, useContext } from "react";
 import type { ComponentType, ReactNode } from "react";
 import { createRoot } from "react-dom/client";
@@ -66,16 +72,36 @@ export function registerReactPanel(
 ): Disposable {
   return hudhod.window.registerPanel(
     id,
-    (container) => {
-      const root = createRoot(container);
-      root.render(
-        <HudhodProvider value={hudhod}>
-          <Component />
-        </HudhodProvider>,
-      );
-      // Deferred so unmount never runs inside React's own render phase.
-      return () => queueMicrotask(() => root.unmount());
-    },
+    reactRenderer(hudhod, Component),
     options,
   );
+}
+
+/** Registers a view body whose React tree has the same lifecycle as a panel. */
+export function registerReactView(
+  hudhod: HudhodApi,
+  id: string,
+  Component: ComponentType,
+  options: RegisterViewOptions,
+): Disposable {
+  return hudhod.window.registerView(
+    id,
+    reactRenderer(hudhod, Component),
+    options,
+  );
+}
+
+function reactRenderer(
+  hudhod: HudhodApi,
+  Component: ComponentType,
+): PanelRenderer {
+  return (container) => {
+    const root = createRoot(container);
+    root.render(
+      <HudhodProvider value={hudhod}>
+        <Component />
+      </HudhodProvider>,
+    );
+    return () => queueMicrotask(() => root.unmount());
+  };
 }

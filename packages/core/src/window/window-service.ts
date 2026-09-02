@@ -13,6 +13,7 @@ import type {
   QuickPickItem,
   QuickPickOptions,
   RegisterPanelOptions,
+  RegisterViewOptions,
   WindowApi,
   PanelRenderer,
 } from "@hudhod/sdk";
@@ -37,6 +38,11 @@ export interface WindowUiProvider {
     id: string,
     render: PanelRenderer,
     options: RegisterPanelOptions,
+  ): Disposable;
+  registerView(
+    id: string,
+    render: PanelRenderer,
+    options: RegisterViewOptions,
   ): Disposable;
   openPanel(id: string): Promise<void>;
   closePanel(id: string): Promise<boolean>;
@@ -86,6 +92,14 @@ export class WindowService implements WindowApi, Disposable {
     options: RegisterPanelOptions,
   ): Disposable {
     return this.#provider.registerPanel(id, render, options);
+  }
+
+  registerView(
+    id: string,
+    render: PanelRenderer,
+    options: RegisterViewOptions,
+  ): Disposable {
+    return this.#provider.registerView(id, render, options);
   }
 
   async openPanel(id: string): Promise<void> {

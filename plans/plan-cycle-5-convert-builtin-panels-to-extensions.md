@@ -4,6 +4,7 @@
 >
 > - `plans/plan-cycle-4-panel-icons.md` (**must be complete before starting this cycle** — this
 >   cycle's extensions set `PanelContribution.icon`, which doesn't exist until Cycle 4 lands)
+> - `plans/plan-cycle-6-view-containers-and-views.md` (follow-on initiative, depends on this cycle)
 
 ## Goal of this cycle
 

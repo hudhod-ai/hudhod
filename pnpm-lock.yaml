@@ -20,6 +20,9 @@ importers:
       '@hudhod/extension-new-file':
         specifier: workspace:*
         version: link:packages/extension-new-file
+      '@hudhod/extension-outline':
+        specifier: workspace:*
+        version: link:packages/extension-outline
       '@hudhod/react':
         specifier: workspace:*
         version: link:packages/react
@@ -188,6 +191,25 @@ importers:
       vitest:
         specifier: ^3.2.0
         version: 3.2.7(@types/node@20.19.43)(jiti@2.7.0)(lightningcss@1.32.0)(supports-color@7.2.0)(yaml@2.9.0)
+
+  packages/extension-outline:
+    dependencies:
+      '@hudhod/react':
+        specifier: workspace:*
+        version: link:../react
+      '@hudhod/sdk':
+        specifier: workspace:*
+        version: link:../sdk
+    devDependencies:
+      '@types/react':
+        specifier: ^19
+        version: 19.2.18
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
 
   packages/react:
     dependencies:
