@@ -1,0 +1,121 @@
+@import "dockview-react/dist/styles/dockview.css";
+
+.hudhod-workbench {
+  display: flex;
+  min-height: 0;
+  height: 100%;
+}
+
+.hudhod-workbench--horizontal {
+  flex-direction: column;
+}
+
+.hudhod-dockview {
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.hudhod-activity-bar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+}
+
+.hudhod-activity-bar--vertical {
+  flex-direction: column;
+  width: 48px;
+}
+
+.hudhod-activity-bar--horizontal {
+  flex-direction: row;
+  height: 48px;
+}
+
+.hudhod-activity-bar__item {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.hudhod-activity-bar__item:hover,
+.hudhod-activity-bar__item[aria-pressed="true"] {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.hudhod-default-tab {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  align-items: center;
+  padding: 0 12px;
+}
+
+.hudhod-default-tab__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hudhod-view-container,
+.hudhod-view-section,
+.hudhod-view-body,
+.hudhod-renderer-mount {
+  min-height: 0;
+}
+
+.hudhod-view-container {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.hudhod-view-section--expanded {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.hudhod-view-section--collapsed {
+  flex: 0 0 auto;
+}
+
+.hudhod-view-header {
+  display: flex;
+  height: 32px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.hudhod-view-body,
+.hudhod-renderer-mount,
+.hudhod-renderer-mount > div {
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+}
+
+.hudhod-workbench--hide-panel-headers .dv-tabs-and-actions-container {
+  display: none;
+}

@@ -19,14 +19,16 @@
     ".": {
       "types": "./src/index.tsx",
       "default": "./src/index.tsx"
-    }
+    },
+    "./styles.css": "./src/styles.css"
   },
   "publishConfig": {
     "exports": {
       ".": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
-      }
+      },
+      "./styles.css": "./dist/styles.css"
     },
     "access": "public"
   },

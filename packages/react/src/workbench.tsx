@@ -1,5 +1,3 @@
-import "dockview-react/dist/styles/dockview.css";
-
 import { ChevronDown, ChevronRight, Puzzle } from "lucide-react";
 import {
   DockviewReact,
@@ -135,7 +133,7 @@ export function HudhodWorkbench({
   const dockview = (
     <DockviewReact
       {...dockviewProps}
-      className={`${className} ${showPanelHeaders ? "" : "hudhod-workbench--hide-panel-headers"}`}
+      className={`hudhod-dockview ${className} ${showPanelHeaders ? "" : "hudhod-workbench--hide-panel-headers"}`}
       components={components}
       defaultTabComponent={
         dockviewProps?.defaultTabComponent ?? HudhodDefaultTab
@@ -164,15 +162,14 @@ export function HudhodWorkbench({
   );
 
   return (
-    <div className={`flex h-full min-h-0 ${isHorizontal ? "flex-col" : ""}`}>
+    <div
+      className={`hudhod-workbench ${isHorizontal ? "hudhod-workbench--horizontal" : ""}`}
+    >
       {(activityBarPosition === "left" || activityBarPosition === "top") &&
         activityBarElement}
       {dockview}
       {(activityBarPosition === "right" || activityBarPosition === "bottom") &&
         activityBarElement}
-      {!showPanelHeaders && (
-        <style>{`.hudhod-workbench--hide-panel-headers .dv-tabs-and-actions-container { display: none; }`}</style>
-      )}
     </div>
   );
 }
@@ -197,7 +194,7 @@ export function HudhodActivityBar({
 
   return (
     <nav
-      className={`flex shrink-0 items-center gap-1 p-2 ${horizontal ? "h-12 flex-row" : "w-12 flex-col"} ${className}`}
+      className={`hudhod-activity-bar ${horizontal ? "hudhod-activity-bar--horizontal" : "hudhod-activity-bar--vertical"} ${className}`}
       aria-label="Activity bar"
     >
       {panels.map((panel) => {
@@ -215,7 +212,7 @@ export function HudhodActivityBar({
             title={panel.title}
             aria-pressed={isOpen}
             onClick={open}
-            className={`flex h-10 w-10 items-center justify-center rounded-md ${itemClassName} ${isOpen ? activeItemClassName : ""}`}
+            className={`hudhod-activity-bar__item ${itemClassName} ${isOpen ? activeItemClassName : ""}`}
           >
             <Icon size={20} />
           </button>
@@ -227,8 +224,8 @@ export function HudhodActivityBar({
 
 function HudhodDefaultTab({ api }: IDockviewPanelHeaderProps) {
   return (
-    <div className="flex h-full min-w-0 items-center px-3 text-[12px] text-zinc-700 dark:text-zinc-300">
-      <span className="truncate">{api.title}</span>
+    <div className="hudhod-default-tab">
+      <span className="hudhod-default-tab__title">{api.title}</span>
     </div>
   );
 }
@@ -350,23 +347,25 @@ function ContainerHost({
         : [],
     ),
   ];
-  if (sections.length === 0) return <div className="h-full w-full" />;
+  if (sections.length === 0) return <div className="hudhod-renderer-mount" />;
   if (sections.length === 1)
     return <RendererMount entry={sections[0]!.entry} />;
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-auto">
+    <div className="hudhod-view-container">
       {sections.map((section) => {
         const isCollapsed = collapsed.has(section.id);
         return (
           <section
             key={section.id}
             className={
-              isCollapsed ? "shrink-0" : "flex min-h-0 flex-1 flex-col"
+              isCollapsed
+                ? "hudhod-view-section--collapsed"
+                : "hudhod-view-section hudhod-view-section--expanded"
             }
           >
             <button
               type="button"
-              className="flex h-8 shrink-0 items-center gap-1 px-2 text-left text-[11px] font-medium uppercase"
+              className="hudhod-view-header"
               aria-expanded={!isCollapsed}
               onClick={() =>
                 setCollapsed((current) => {
@@ -384,7 +383,7 @@ function ContainerHost({
               {section.title}
             </button>
             {!isCollapsed && (
-              <div className="min-h-0 flex-1">
+              <div className="hudhod-view-body">
                 <RendererMount entry={section.entry} />
               </div>
             )}
@@ -414,7 +413,7 @@ function RendererMount({ entry }: { entry: HudhodReactRenderer }) {
   useEffect(() => {
     if (!element) return;
     const mount = document.createElement("div");
-    mount.className = "h-full w-full";
+    mount.className = "hudhod-renderer-mount";
     element.append(mount);
     let cancelled = false;
     let cleanup: void | (() => void);
@@ -428,7 +427,7 @@ function RendererMount({ entry }: { entry: HudhodReactRenderer }) {
       queueMicrotask(() => mount.remove());
     };
   }, [element, entry]);
-  return <div ref={setElement} className="h-full w-full" />;
+  return <div ref={setElement} className="hudhod-renderer-mount" />;
 }
 
 function isIcon(icon: unknown): icon is ElementType<SVGProps<SVGSVGElement>> {

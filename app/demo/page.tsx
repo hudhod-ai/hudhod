@@ -1,5 +1,7 @@
 "use client";
 
+import "@hudhod/react/styles.css";
+
 import { FakeProcessSpawner, InMemoryFileSystemProvider } from "@hudhod/core";
 import {
   createHudhodReactHost,
