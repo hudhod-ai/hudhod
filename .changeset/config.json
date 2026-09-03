@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["hudhod", "@hudhod/extension-new-file", "@hudhod/extension-outline"]
+  "ignore": ["@hudhod/extension-new-file", "@hudhod/extension-outline"]
 }
