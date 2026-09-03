@@ -8,19 +8,10 @@
  * @packageDocumentation
  */
 
-import type {
-  Disposable,
-  Event,
-  KeybindingContribution,
-  ResolvedKeybinding,
-} from "@hudhod/sdk";
+import type { Disposable, Event, KeybindingContribution, ResolvedKeybinding } from "@hudhod/sdk";
 
 import { Emitter } from "../base/event";
-import {
-  keybindingFromEvent,
-  keybindingToString,
-  parseKeybinding,
-} from "./keybinding-parser";
+import { keybindingFromEvent, keybindingToString, parseKeybinding } from "./keybinding-parser";
 
 interface StackedBinding {
   readonly contribution: KeybindingContribution;
@@ -49,9 +40,8 @@ export class KeybindingRegistry implements Disposable {
   readonly #platform: "mac" | "other";
 
   /** Fires whenever the keybinding catalog changes. */
-  readonly onDidChangeKeybindings: Event<readonly ResolvedKeybinding[]> = (
-    listener,
-  ) => this.#changeEmitter.event(listener);
+  readonly onDidChangeKeybindings: Event<readonly ResolvedKeybinding[]> = (listener) =>
+    this.#changeEmitter.event(listener);
 
   /**
    * @param platform Platform identifier. Use `"mac"` for macOS; otherwise `"other"`.
@@ -73,12 +63,9 @@ export class KeybindingRegistry implements Disposable {
     options?: { source?: "extension" | "builtin"; extensionId?: string },
   ): Disposable {
     const keyNormalized = parseKeybinding(binding.key);
-    const macNormalized = binding.mac
-      ? parseKeybinding(binding.mac)
-      : undefined;
+    const macNormalized = binding.mac ? parseKeybinding(binding.mac) : undefined;
 
-    const resolved =
-      this.#platform === "mac" && macNormalized ? macNormalized : keyNormalized;
+    const resolved = this.#platform === "mac" && macNormalized ? macNormalized : keyNormalized;
     const keyStr = keybindingToString(resolved);
 
     const source = options?.source ?? "extension";
@@ -167,21 +154,14 @@ export class KeybindingRegistry implements Disposable {
   }
 
   #fireChange(): void {
-    void this.getKeybindings().then((bindings) =>
-      this.#changeEmitter.fire(bindings),
-    );
+    void this.getKeybindings().then((bindings) => this.#changeEmitter.fire(bindings));
   }
 }
 
-function sortedBy<T>(
-  values: readonly T[],
-  compare: (left: T, right: T) => number,
-): T[] {
+function sortedBy<T>(values: readonly T[], compare: (left: T, right: T) => number): T[] {
   const result: T[] = [];
   for (const value of values) {
-    const index = result.findIndex(
-      (candidate) => compare(value, candidate) < 0,
-    );
+    const index = result.findIndex((candidate) => compare(value, candidate) < 0);
     if (index === -1) result.push(value);
     else result.splice(index, 0, value);
   }

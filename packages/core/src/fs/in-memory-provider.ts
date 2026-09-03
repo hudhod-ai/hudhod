@@ -108,9 +108,7 @@ export class InMemoryFileSystemProvider implements FileSystemProvider {
 
   /** Every path currently stored, sorted. Intended for test assertions. */
   snapshot(): string[] {
-    return sortedBy(Array.from(this.#nodes.keys()), (left, right) =>
-      left.localeCompare(right),
-    );
+    return sortedBy(Array.from(this.#nodes.keys()), (left, right) => left.localeCompare(right));
   }
 
   async readFile(path: string): Promise<Uint8Array> {
@@ -181,11 +179,7 @@ export class InMemoryFileSystemProvider implements FileSystemProvider {
     this.#emit([{ type: "deleted", path }]);
   }
 
-  async rename(
-    from: string,
-    to: string,
-    options: { overwrite: boolean },
-  ): Promise<void> {
+  async rename(from: string, to: string, options: { overwrite: boolean }): Promise<void> {
     const node = this.#nodes.get(from);
     if (!node) throw fileNotFound(from);
 
@@ -302,15 +296,10 @@ export class InMemoryFileSystemProvider implements FileSystemProvider {
   }
 }
 
-function sortedBy<T>(
-  values: readonly T[],
-  compare: (left: T, right: T) => number,
-): T[] {
+function sortedBy<T>(values: readonly T[], compare: (left: T, right: T) => number): T[] {
   const result: T[] = [];
   for (const value of values) {
-    const index = result.findIndex(
-      (candidate) => compare(value, candidate) < 0,
-    );
+    const index = result.findIndex((candidate) => compare(value, candidate) < 0);
     if (index === -1) result.push(value);
     else result.splice(index, 0, value);
   }

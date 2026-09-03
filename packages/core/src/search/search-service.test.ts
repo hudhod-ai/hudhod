@@ -31,7 +31,11 @@ describe("SearchService", () => {
     it("matches by extension across directories", async () => {
       const found = await search.findFiles("**/*.ts");
 
-      expect(found.toSorted()).toEqual(["/src/index.ts", "/src/lib/util.test.ts", "/src/lib/util.ts"]);
+      expect(found.toSorted()).toEqual([
+        "/src/index.ts",
+        "/src/lib/util.test.ts",
+        "/src/lib/util.ts",
+      ]);
     });
 
     it("matches within a directory prefix", async () => {

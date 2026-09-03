@@ -78,12 +78,10 @@ export class ProcessService implements ProcessApi {
   }
 
   /** Fires whenever a process starts. */
-  readonly onDidStartProcess: Event<ProcessInfo> = (listener) =>
-    this.#startEmitter.event(listener);
+  readonly onDidStartProcess: Event<ProcessInfo> = (listener) => this.#startEmitter.event(listener);
 
   /** Fires whenever a process exits, for any reason. */
-  readonly onDidExitProcess: Event<ProcessInfo> = (listener) =>
-    this.#exitEmitter.event(listener);
+  readonly onDidExitProcess: Event<ProcessInfo> = (listener) => this.#exitEmitter.event(listener);
 
   async spawn(
     command: string,
