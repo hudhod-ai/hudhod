@@ -1,69 +1,59 @@
 # hudhod
 
-An extensible in-browser development environment with project version management,
-Supabase Auth, Postgres, Row Level Security, and private Storage.
+Composable packages for building an in-browser IDE runtime with extension APIs, a headless core, React workbench bindings, and WebContainer adapters.
 
-## Local development
+## Packages
+
+| Package                | Purpose                                                                                                  |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- |
+| `@hudhod/sdk`          | Public extension-facing API types and contracts.                                                         |
+| `@hudhod/core`         | Headless runtime for file system, search, diff, process, commands, panels, views, and extension hosting. |
+| `@hudhod/react`        | React host and workbench components for rendering contributed UI.                                        |
+| `@hudhod/webcontainer` | Browser WebContainer adapters for the core runtime.                                                      |
+
+Private example extensions live in `examples/extensions/`. They are part of the workspace for local development, but they are not published to npm.
+
+## Development
 
 ```bash
 pnpm install
-pnpm supabase:start
-pnpm dev
+pnpm packages:build
+pnpm test
 ```
 
-The local Supabase API runs at `http://127.0.0.1:54321`; Studio runs at `http://127.0.0.1:54323`. Copy the local API URL and publishable key printed by `pnpm supabase:start` into `.env.local` when developing against the local stack.
+Useful commands:
 
-Schema, RLS policies, Storage bucket configuration, and Auth profile trigger live in `supabase/migrations/`. Apply them to the linked project with:
+| Command               | Purpose                                    |
+| --------------------- | ------------------------------------------ |
+| `pnpm build`          | Build all publishable packages.            |
+| `pnpm packages:build` | Build packages under `packages/*`.         |
+| `pnpm examples:build` | Build private example extensions.          |
+| `pnpm typecheck`      | Type-check publishable packages.           |
+| `pnpm test`           | Run package tests through Vitest projects. |
+| `pnpm lint`           | Run `oxlint`.                              |
+| `pnpm fmt:check`      | Check formatting with `oxfmt`.             |
+| `pnpm changeset`      | Create a release changeset.                |
 
-```bash
-pnpm supabase:db:push
-```
+## Publishing
 
-See [SUPABASE-DEVELOPMENT.md](SUPABASE-DEVELOPMENT.md) for the full migration, RLS testing, and deployment workflow.
+This repo uses Changesets with independent package versions. Runtime packages start at `0.1.0`; private examples are ignored by Changesets and are not published.
 
-## Linting and formatting
+Release flow:
 
-This project uses the [Oxc](https://oxc.rs) toolchain. ESLint and Prettier are not used.
+1. Make a package change.
+2. Run `pnpm changeset` and describe the semver impact.
+3. Merge the change to `main`.
+4. The release workflow opens or updates a Version Packages pull request.
+5. Merge that pull request to publish changed packages to npm.
 
-| Command          | Purpose                           |
-| ---------------- | --------------------------------- |
-| `pnpm lint`      | Run `oxlint`                      |
-| `pnpm lint:fix`  | Apply `oxlint` auto-fixes         |
-| `pnpm fmt`       | Format in place with `oxfmt`      |
-| `pnpm fmt:check` | Verify formatting without writing |
-| `pnpm typecheck` | Type-check with `tsc --noEmit`    |
+The publish workflow requires an `NPM_TOKEN` repository secret unless npm trusted publishing is configured for the scope.
 
-`oxlint` is configured in `.oxlintrc.json` with the `eslint`, `typescript`, `unicorn`, `oxc`, `react`, `nextjs`, `jsx-a11y`, and `import` plugins enabled. The `nextjs` plugin replaces the rules previously provided by `eslint-config-next`.
+## Documentation
 
-`oxfmt` is configured in `.oxfmtrc.json`. Beyond Prettier-compatible formatting it also:
+- [docs/composable-ide-development.md](docs/composable-ide-development.md)
+- [docs/extension-development.md](docs/extension-development.md)
+- [docs/release-workflows.md](docs/release-workflows.md)
 
-- sorts imports into `builtin → external → @/internal → relative` groups, separated by blank lines
-- sorts Tailwind class names in `className` and in `cn` / `clsx` / `cva` calls, using `app/globals.css` as the Tailwind v4 source
-- sorts `package.json` keys
+## License
 
-Do not reorder imports or Tailwind classes by hand; `oxfmt` owns both. Blank lines between logical blocks are preserved, so keep them where they aid readability.
-
-Install the `oxc.oxc-vscode` extension for format-on-save and inline diagnostics. It is already listed in `.vscode/extensions.json`.
-
-## Environments
-
-Each development, test/UAT, and production environment should have a separate Supabase project. To move the schema to another project, authenticate with the Supabase CLI, then run:
-
-```bash
-pnpm exec supabase link --project-ref <new-project-ref>
-pnpm supabase:db:push
-```
-
-Set that environment's `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and server-only `SUPABASE_SERVICE_ROLE_KEY`. No application code changes are needed.
-
-## Revision deployments
-
-Every project revision receives a unique deployment token. Supply it to the bootstrap image as `MCPUP_API_TOKEN`; it only authorizes retrieval of that exact revision.
-
-```bash
-docker run --rm -p 8080:8080 \
-	-e MCPUP_PROJECT_ID=<project-uuid> \
-	-e MCPUP_REVISION=1 \
-	-e MCPUP_API_TOKEN=<revision-deployment-token> \
-	osamanj93/mcpup-bootstrap
-```
+MIT. See [LICENSE](LICENSE).

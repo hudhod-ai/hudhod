@@ -1,6 +1,6 @@
 {
   "name": "@hudhod/webcontainer",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "WebContainer adapters for the headless Hudhod runtime.",
   "license": "MIT",
   "files": [
@@ -31,12 +31,12 @@
     "@hudhod/core": "workspace:*",
     "@hudhod/sdk": "workspace:*"
   },
-  "peerDependencies": {
-    "@webcontainer/api": "^1.6.4"
-  },
   "devDependencies": {
     "@webcontainer/api": "^1.6.4",
     "tsdown": "^0.15.6",
     "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "@webcontainer/api": "^1.6.4"
   }
 }

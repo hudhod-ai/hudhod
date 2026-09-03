@@ -24,9 +24,7 @@ export interface ServiceIdentifier<T> {
 }
 
 /** Creates a typed service identifier. */
-export function createServiceIdentifier<T>(
-  description: string,
-): ServiceIdentifier<T> {
+export function createServiceIdentifier<T>(description: string): ServiceIdentifier<T> {
   return { description, key: Symbol(description) };
 }
 
@@ -50,10 +48,7 @@ export class ServiceRegistry implements Disposable {
   #disposed = false;
 
   /** Registers a lazy factory for a service. */
-  register<T>(
-    identifier: ServiceIdentifier<T>,
-    factory: ServiceFactory<T>,
-  ): void {
+  register<T>(identifier: ServiceIdentifier<T>, factory: ServiceFactory<T>): void {
     this.#assertActive();
     if (this.#factories.has(identifier.key)) {
       throw new Error(`Service already registered: ${identifier.description}`);
@@ -68,8 +63,7 @@ export class ServiceRegistry implements Disposable {
     if (existing !== undefined) return existing as T;
 
     const factory = this.#factories.get(identifier.key);
-    if (!factory)
-      throw new Error(`Service not registered: ${identifier.description}`);
+    if (!factory) throw new Error(`Service not registered: ${identifier.description}`);
 
     const instance = factory(this) as T;
     this.#instances.set(identifier.key, instance);

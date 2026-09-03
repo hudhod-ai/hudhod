@@ -1,5 +1,6 @@
-import type { ProcessInfo } from "@hudhod/sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { ProcessInfo } from "@hudhod/sdk";
 
 import { FakeProcessSpawner } from "./fake-spawner";
 import { ProcessService } from "./process-service";

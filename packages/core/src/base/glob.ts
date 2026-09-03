@@ -49,9 +49,7 @@ export function createMatcher(patterns: readonly string[]): GlobMatcher {
  *
  * Used for include patterns, where "no filter" means "everything".
  */
-export function createIncludeMatcher(
-  patterns: readonly string[] | undefined,
-): GlobMatcher {
+export function createIncludeMatcher(patterns: readonly string[] | undefined): GlobMatcher {
   if (!patterns || patterns.length === 0) return () => true;
   return createMatcher(patterns);
 }

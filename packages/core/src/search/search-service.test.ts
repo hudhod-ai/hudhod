@@ -5,10 +5,7 @@ import { InMemoryFileSystemProvider } from "../fs/in-memory-provider";
 import { createWorkspaceConfig } from "../workspace/config";
 import { SearchService } from "./search-service";
 
-function createSearch(
-  files: Record<string, string>,
-  config = createWorkspaceConfig(),
-) {
+function createSearch(files: Record<string, string>, config = createWorkspaceConfig()) {
   const fs = new FileSystemService(InMemoryFileSystemProvider.from(files), {
     config,
     debounceMs: 0,
@@ -34,20 +31,13 @@ describe("SearchService", () => {
     it("matches by extension across directories", async () => {
       const found = await search.findFiles("**/*.ts");
 
-      expect(found.sort()).toEqual([
-        "/src/index.ts",
-        "/src/lib/util.test.ts",
-        "/src/lib/util.ts",
-      ]);
+      expect(found.sort()).toEqual(["/src/index.ts", "/src/lib/util.test.ts", "/src/lib/util.ts"]);
     });
 
     it("matches within a directory prefix", async () => {
       const found = await search.findFiles("src/lib/**");
 
-      expect(found.sort()).toEqual([
-        "/src/lib/util.test.ts",
-        "/src/lib/util.ts",
-      ]);
+      expect(found.sort()).toEqual(["/src/lib/util.test.ts", "/src/lib/util.ts"]);
     });
 
     it("matches a specific file", async () => {
@@ -184,9 +174,7 @@ describe("SearchService", () => {
     it("skips excluded directories by default", async () => {
       const { matches } = await search.findInFiles("TODO");
 
-      expect(
-        matches.every((match) => !match.path.includes("node_modules")),
-      ).toBe(true);
+      expect(matches.every((match) => !match.path.includes("node_modules"))).toBe(true);
     });
 
     it("filters by include pattern", async () => {

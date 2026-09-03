@@ -1,3 +1,5 @@
+import type { WebContainer } from "@webcontainer/api";
+
 import {
   directoryNotEmpty,
   fileExists,
@@ -9,8 +11,6 @@ import {
   joinPath,
   toDisposable,
 } from "@hudhod/core";
-import type { Disposable, FileChangeEvent, FileType } from "@hudhod/sdk";
-import type { WebContainer } from "@webcontainer/api";
 import type {
   FileSystemProvider,
   ProcessSpawner,
@@ -20,6 +20,7 @@ import type {
   SpawnedProcess,
   SpawnerOptions,
 } from "@hudhod/core";
+import type { Disposable, FileChangeEvent, FileType } from "@hudhod/sdk";
 
 /** Adapts WebContainer's filesystem to Hudhod's provider contract. */
 export class WebContainerFileSystemProvider implements FileSystemProvider {
@@ -67,11 +68,7 @@ export class WebContainerFileSystemProvider implements FileSystemProvider {
     }
   }
 
-  async rename(
-    from: string,
-    to: string,
-    options: { overwrite: boolean },
-  ): Promise<void> {
+  async rename(from: string, to: string, options: { overwrite: boolean }): Promise<void> {
     if (!options.overwrite && (await this.#exists(to))) throw fileExists(to);
     try {
       await this.#container.fs.rename(from, to);
@@ -91,8 +88,7 @@ export class WebContainerFileSystemProvider implements FileSystemProvider {
     }
     const entry = entries.find((candidate) => candidate.name === name);
     if (!entry) throw fileNotFound(path);
-    if (entry.type === "directory")
-      return { type: "directory", size: 0, mtime: 0 };
+    if (entry.type === "directory") return { type: "directory", size: 0, mtime: 0 };
     const data = await this.readFile(path);
     return { type: "file", size: data.byteLength, mtime: 0 };
   }
@@ -193,11 +189,7 @@ export function createWebContainerServices(container: WebContainer): {
 }
 
 function isErrno(error: unknown, code: string): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    (error as { code?: unknown }).code === code
-  );
+  return typeof error === "object" && error !== null && (error as { code?: unknown }).code === code;
 }
 
 function translate(error: unknown, path: string): unknown {

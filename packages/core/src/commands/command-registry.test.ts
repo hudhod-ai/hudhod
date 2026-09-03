@@ -5,14 +5,9 @@ import { CommandRegistry } from "./command-registry";
 describe("CommandRegistry", () => {
   it("registers and executes a synchronous command", async () => {
     const commands = new CommandRegistry();
-    commands.registerCommand(
-      "demo.sum",
-      (left, right) => Number(left) + Number(right),
-    );
+    commands.registerCommand("demo.sum", (left, right) => Number(left) + Number(right));
 
-    await expect(
-      commands.executeCommand<number>("demo.sum", 2, 3),
-    ).resolves.toBe(5);
+    await expect(commands.executeCommand<number>("demo.sum", 2, 3)).resolves.toBe(5);
   });
 
   it("awaits an asynchronous command", async () => {
@@ -76,18 +71,18 @@ describe("CommandRegistry", () => {
     commands.registerCommand("apple", () => {}, { title: "Alpha" });
     commands.registerCommand("mid", () => {}, { title: "Zulu" });
 
-    expect((await commands.getCommands()).map((command) => command.id)).toEqual(
-      ["apple", "zebra", "mid"],
-    );
+    expect((await commands.getCommands()).map((command) => command.id)).toEqual([
+      "apple",
+      "zebra",
+      "mid",
+    ]);
   });
 
   it("defaults the descriptor title to the id", async () => {
     const commands = new CommandRegistry();
     commands.registerCommand("demo.run", () => {});
 
-    expect(await commands.getCommands()).toEqual([
-      { id: "demo.run", title: "demo.run" },
-    ]);
+    expect(await commands.getCommands()).toEqual([{ id: "demo.run", title: "demo.run" }]);
   });
 
   it("retains category metadata", async () => {
@@ -105,9 +100,7 @@ describe("CommandRegistry", () => {
   it("fires when commands are added and removed", async () => {
     const commands = new CommandRegistry();
     const snapshots: string[][] = [];
-    commands.onDidChangeCommands((catalog) =>
-      snapshots.push(catalog.map((command) => command.id)),
-    );
+    commands.onDidChangeCommands((catalog) => snapshots.push(catalog.map((command) => command.id)));
 
     const registration = commands.registerCommand("demo.run", () => {});
     await vi.waitFor(() => expect(snapshots).toEqual([["demo.run"]]));

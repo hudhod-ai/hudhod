@@ -115,18 +115,10 @@ export interface WindowApi {
    * Contributes a panel to the workbench layout.
    * @returns A {@link Disposable} that removes the panel.
    */
-  registerPanel(
-    id: string,
-    render: PanelRenderer,
-    options: RegisterPanelOptions,
-  ): Disposable;
+  registerPanel(id: string, render: PanelRenderer, options: RegisterPanelOptions): Disposable;
 
   /** Supplies the body renderer for a contributed view. */
-  registerView(
-    id: string,
-    render: PanelRenderer,
-    options: RegisterViewOptions,
-  ): Disposable;
+  registerView(id: string, render: PanelRenderer, options: RegisterViewOptions): Disposable;
 
   /** Opens a panel, or focuses it when already open. */
   openPanel(id: string): Promise<void>;

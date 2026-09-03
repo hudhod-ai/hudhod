@@ -39,9 +39,8 @@ export class CommandRegistry implements CommandsApi, Disposable {
   readonly #changeEmitter = new Emitter<readonly CommandDescriptor[]>();
 
   /** Fires whenever the command catalog changes. */
-  readonly onDidChangeCommands: Event<readonly CommandDescriptor[]> = (
-    listener,
-  ) => this.#changeEmitter.event(listener);
+  readonly onDidChangeCommands: Event<readonly CommandDescriptor[]> = (listener) =>
+    this.#changeEmitter.event(listener);
 
   /**
    * Registers a command handler.
@@ -54,10 +53,7 @@ export class CommandRegistry implements CommandsApi, Disposable {
     options: RegisterCommandOptions = {},
   ): Disposable {
     if (this.#commands.has(id)) {
-      throw createError(
-        "CommandExists",
-        `Command is already registered: ${id}`,
-      );
+      throw createError("CommandExists", `Command is already registered: ${id}`);
     }
 
     const descriptor: CommandDescriptor = {
@@ -86,10 +82,7 @@ export class CommandRegistry implements CommandsApi, Disposable {
    *
    * @throws A `CommandNotFound` error when no handler is registered for `id`.
    */
-  async executeCommand<T = unknown>(
-    id: string,
-    ...args: readonly unknown[]
-  ): Promise<T> {
+  async executeCommand<T = unknown>(id: string, ...args: readonly unknown[]): Promise<T> {
     const command = this.#commands.get(id);
     if (!command) {
       throw createError("CommandNotFound", `Command not found: ${id}`);
@@ -102,9 +95,7 @@ export class CommandRegistry implements CommandsApi, Disposable {
     return [...this.#commands.values()]
       .map(({ descriptor }) => ({ ...descriptor }))
       .sort(
-        (left, right) =>
-          left.title.localeCompare(right.title) ||
-          left.id.localeCompare(right.id),
+        (left, right) => left.title.localeCompare(right.title) || left.id.localeCompare(right.id),
       );
   }
 
@@ -117,8 +108,6 @@ export class CommandRegistry implements CommandsApi, Disposable {
   }
 
   #fireChange(): void {
-    void this.getCommands().then((commands) =>
-      this.#changeEmitter.fire(commands),
-    );
+    void this.getCommands().then((commands) => this.#changeEmitter.fire(commands));
   }
 }

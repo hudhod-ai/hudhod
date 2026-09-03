@@ -8,20 +8,11 @@
  * @packageDocumentation
  */
 
-import type {
-  Disposable,
-  Event,
-  KeybindingContribution,
-  ResolvedKeybinding,
-} from "@hudhod/sdk";
+import type { Disposable, Event, KeybindingContribution, ResolvedKeybinding } from "@hudhod/sdk";
 
 import { createError } from "../base/errors";
 import { Emitter } from "../base/event";
-import {
-  keybindingFromEvent,
-  keybindingToString,
-  parseKeybinding,
-} from "./keybinding-parser";
+import { keybindingFromEvent, keybindingToString, parseKeybinding } from "./keybinding-parser";
 
 interface StackedBinding {
   readonly contribution: KeybindingContribution;
@@ -50,9 +41,8 @@ export class KeybindingRegistry implements Disposable {
   readonly #platform: "mac" | "other";
 
   /** Fires whenever the keybinding catalog changes. */
-  readonly onDidChangeKeybindings: Event<readonly ResolvedKeybinding[]> = (
-    listener,
-  ) => this.#changeEmitter.event(listener);
+  readonly onDidChangeKeybindings: Event<readonly ResolvedKeybinding[]> = (listener) =>
+    this.#changeEmitter.event(listener);
 
   /**
    * @param platform Platform identifier. Use `"mac"` for macOS; otherwise `"other"`.
@@ -75,14 +65,9 @@ export class KeybindingRegistry implements Disposable {
   ): Disposable {
     try {
       const keyNormalized = parseKeybinding(binding.key);
-      const macNormalized = binding.mac
-        ? parseKeybinding(binding.mac)
-        : undefined;
+      const macNormalized = binding.mac ? parseKeybinding(binding.mac) : undefined;
 
-      const resolved =
-        this.#platform === "mac" && macNormalized
-          ? macNormalized
-          : keyNormalized;
+      const resolved = this.#platform === "mac" && macNormalized ? macNormalized : keyNormalized;
       const keyStr = keybindingToString(resolved);
 
       const source = options?.source ?? "extension";
@@ -136,6 +121,8 @@ export class KeybindingRegistry implements Disposable {
     if (!stack || stack.length === 0) return undefined;
 
     const top = stack[stack.length - 1];
+    if (!top) return undefined;
+
     return {
       key: keyStr,
       command: top.contribution.command,
@@ -150,6 +137,8 @@ export class KeybindingRegistry implements Disposable {
     for (const [keyStr, stack] of this.#stack) {
       if (stack.length > 0) {
         const top = stack[stack.length - 1];
+        if (!top) continue;
+
         result.push({
           key: keyStr,
           command: top.contribution.command,
@@ -170,8 +159,6 @@ export class KeybindingRegistry implements Disposable {
   }
 
   #fireChange(): void {
-    void this.getKeybindings().then((bindings) =>
-      this.#changeEmitter.fire(bindings),
-    );
+    void this.getKeybindings().then((bindings) => this.#changeEmitter.fire(bindings));
   }
 }

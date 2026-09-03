@@ -63,9 +63,7 @@ const unavailableTerminal: TerminalApi = {
 };
 
 /** Creates an environment-agnostic Hudhod runtime from host-provided adapters. */
-export function createHudhodRuntime(
-  options: CreateHudhodRuntimeOptions,
-): HudhodRuntime {
+export function createHudhodRuntime(options: CreateHudhodRuntimeOptions): HudhodRuntime {
   const fs = new FileSystemService(options.fileSystemProvider);
   const process = new ProcessService(options.processSpawner);
   const commands = new CommandRegistry();

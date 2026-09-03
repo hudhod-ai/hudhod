@@ -7,8 +7,9 @@
  * @packageDocumentation
  */
 
-import type { DiffApi, DiffChange, DiffOptions, DiffStat } from "@hudhod/sdk";
 import { applyPatch, createTwoFilesPatch, diffArrays, diffLines } from "diff";
+
+import type { DiffApi, DiffChange, DiffOptions, DiffStat } from "@hudhod/sdk";
 
 import { createError } from "../base/errors";
 import type { FileSystemService } from "../fs/file-system-service";
@@ -40,8 +41,7 @@ export class DiffService implements DiffApi {
   ): Promise<DiffChange[]> {
     const parts = options.ignoreCase
       ? diffArrays(splitLines(original), splitLines(modified), {
-          comparator: (left, right) =>
-            left.toLowerCase() === right.toLowerCase(),
+          comparator: (left, right) => left.toLowerCase() === right.toLowerCase(),
         })
       : diffLines(original, modified, {
           ignoreWhitespace: options.ignoreWhitespace ?? false,
@@ -49,9 +49,7 @@ export class DiffService implements DiffApi {
 
     const changes: DiffChange[] = [];
     for (const part of parts) {
-      const lines = Array.isArray(part.value)
-        ? part.value
-        : splitLines(part.value);
+      const lines = Array.isArray(part.value) ? part.value : splitLines(part.value);
       // jsdiff can emit an empty trailing part; it carries no information.
       if (lines.length === 0) continue;
       changes.push({
@@ -74,11 +72,7 @@ export class DiffService implements DiffApi {
     return this.diffText(original, modified, options);
   }
 
-  async diffStat(
-    original: string,
-    modified: string,
-    options: DiffOptions = {},
-  ): Promise<DiffStat> {
+  async diffStat(original: string, modified: string, options: DiffOptions = {}): Promise<DiffStat> {
     const changes = await this.diffText(original, modified, options);
 
     let added = 0;
@@ -96,18 +90,10 @@ export class DiffService implements DiffApi {
     modified: string,
     options: DiffOptions = {},
   ): Promise<string> {
-    return createTwoFilesPatch(
-      path,
-      path,
-      original,
-      modified,
-      undefined,
-      undefined,
-      {
-        context: options.context ?? DEFAULT_CONTEXT,
-        ignoreWhitespace: options.ignoreWhitespace ?? false,
-      },
-    );
+    return createTwoFilesPatch(path, path, original, modified, undefined, undefined, {
+      context: options.context ?? DEFAULT_CONTEXT,
+      ignoreWhitespace: options.ignoreWhitespace ?? false,
+    });
   }
 
   /**
@@ -121,11 +107,7 @@ export class DiffService implements DiffApi {
     const result = applyPatch(original, patch);
 
     if (result === false) {
-      throw createError(
-        "PatchFailed",
-        `Patch did not apply cleanly to ${path}`,
-        { path },
-      );
+      throw createError("PatchFailed", `Patch did not apply cleanly to ${path}`, { path });
     }
 
     await this.#fs.writeTextFile(path, result);

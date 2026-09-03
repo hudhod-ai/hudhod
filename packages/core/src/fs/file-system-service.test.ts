@@ -1,5 +1,6 @@
-import type { FileChangeEvent } from "@hudhod/sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { FileChangeEvent } from "@hudhod/sdk";
 
 import { createWorkspaceConfig } from "../workspace/config";
 import { FileSystemService } from "./file-system-service";

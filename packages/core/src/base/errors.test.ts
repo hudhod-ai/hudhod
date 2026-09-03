@@ -1,5 +1,6 @@
-import { isHudhodError } from "@hudhod/sdk";
 import { describe, expect, it } from "vitest";
+
+import { isHudhodError } from "@hudhod/sdk";
 
 import {
   createError,

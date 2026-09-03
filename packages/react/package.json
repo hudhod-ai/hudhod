@@ -1,6 +1,6 @@
 {
   "name": "@hudhod/react",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "React bindings for hudhod extensions — mount React components into contributed panels.",
   "keywords": [
     "browser-ide",
@@ -40,12 +40,6 @@
     "@hudhod/core": "workspace:*",
     "@hudhod/sdk": "workspace:*"
   },
-  "peerDependencies": {
-    "dockview-react": "^8.2.0",
-    "react": "^19",
-    "react-dom": "^19",
-    "lucide-react": "^1.34.0"
-  },
   "devDependencies": {
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -54,5 +48,11 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "dockview-react": "^8.2.0",
+    "lucide-react": "^1.34.0",
+    "react": "^19",
+    "react-dom": "^19"
   }
 }

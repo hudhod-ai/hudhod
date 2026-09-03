@@ -61,9 +61,7 @@ export interface CreateHudhodReactHostOptions extends Omit<
  * The caller owns product UI through `ui`, then attaches a workbench panel controller
  * once its Dockview layout mounts.
  */
-export function createHudhodReactHost(
-  options: CreateHudhodReactHostOptions,
-): HudhodReactHost {
+export function createHudhodReactHost(options: CreateHudhodReactHostOptions): HudhodReactHost {
   const panelRenderers = new Map<string, HudhodReactRenderer>();
   const viewRenderers = new Map<string, HudhodReactRenderer>();
   let controller: HudhodReactPanelController | undefined;
@@ -89,11 +87,9 @@ export function createHudhodReactHost(
   };
 
   const windowUiProvider: WindowUiProvider = {
-    showMessage: (message, severity) =>
-      options.ui.showMessage(message, severity),
+    showMessage: (message, severity) => options.ui.showMessage(message, severity),
     showInputBox: (inputOptions) => options.ui.showInputBox(inputOptions),
-    showQuickPick: (items, quickPickOptions) =>
-      options.ui.showQuickPick(items, quickPickOptions),
+    showQuickPick: (items, quickPickOptions) => options.ui.showQuickPick(items, quickPickOptions),
     registerPanel: (id, render, panelOptions) =>
       registerRenderer(panelRenderers, id, render, panelOptions),
     registerView: (id, render, viewOptions) =>
@@ -104,8 +100,7 @@ export function createHudhodReactHost(
     get activeEditor() {
       return options.ui.activeEditor;
     },
-    onDidChangeActiveEditor: (listener) =>
-      options.ui.onDidChangeActiveEditor(listener),
+    onDidChangeActiveEditor: (listener) => options.ui.onDidChangeActiveEditor(listener),
   };
   const runtime = createHudhodRuntime({ ...options, windowUiProvider });
 
@@ -118,8 +113,7 @@ export function createHudhodReactHost(
       return { dispose: () => rendererListeners.delete(listener) };
     },
     registerExtensions(extensions) {
-      for (const extension of extensions)
-        runtime.extensions.register(extension);
+      for (const extension of extensions) runtime.extensions.register(extension);
     },
     setPanelController(nextController) {
       controller = nextController;

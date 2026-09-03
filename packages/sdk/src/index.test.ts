@@ -4,9 +4,6 @@ import * as sdk from "./index";
 
 describe("@hudhod/sdk public runtime API", () => {
   it("exposes only intentional runtime helpers", () => {
-    expect(Object.keys(sdk).sort()).toEqual([
-      "defineExtension",
-      "isHudhodError",
-    ]);
+    expect(Object.keys(sdk).sort()).toEqual(["defineExtension", "isHudhodError"]);
   });
 });

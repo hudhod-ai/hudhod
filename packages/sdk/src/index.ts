@@ -9,16 +9,8 @@
  */
 
 export type { HudhodApi } from "./api";
-export type {
-  CommandDescriptor,
-  CommandsApi,
-  RegisterCommandOptions,
-} from "./commands";
-export type {
-  KeybindingContribution,
-  KeybindingsApi,
-  ResolvedKeybinding,
-} from "./keybindings";
+export type { CommandDescriptor, CommandsApi, RegisterCommandOptions } from "./commands";
+export type { KeybindingContribution, KeybindingsApi, ResolvedKeybinding } from "./keybindings";
 export type { DiffApi, DiffChange, DiffOptions, DiffStat } from "./diff";
 export { isHudhodError } from "./errors";
 export type { HudhodError, HudhodErrorCode } from "./errors";

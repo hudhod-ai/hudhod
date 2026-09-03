@@ -7,8 +7,9 @@
  * @packageDocumentation
  */
 
-import type { Disposable, FileChangeEvent, FileType } from "@hudhod/sdk";
 import type { WebContainer } from "@webcontainer/api";
+
+import type { Disposable, FileChangeEvent, FileType } from "@hudhod/sdk";
 
 import { toDisposable } from "../base/disposable";
 import { directoryNotEmpty, fileExists, fileNotFound, notADirectory } from "../base/errors";

@@ -8,6 +8,10 @@
  * @packageDocumentation
  */
 
+import { createContext, useContext } from "react";
+import type { ComponentType, ReactNode } from "react";
+import { createRoot } from "react-dom/client";
+
 import type {
   Disposable,
   HudhodApi,
@@ -15,9 +19,6 @@ import type {
   RegisterPanelOptions,
   RegisterViewOptions,
 } from "@hudhod/sdk";
-import { createContext, useContext } from "react";
-import type { ComponentType, ReactNode } from "react";
-import { createRoot } from "react-dom/client";
 
 export {
   createHudhodReactHost,
@@ -46,9 +47,7 @@ export function HudhodProvider({
   readonly value: HudhodApi;
   readonly children: ReactNode;
 }) {
-  return (
-    <HudhodContext.Provider value={value}>{children}</HudhodContext.Provider>
-  );
+  return <HudhodContext.Provider value={value}>{children}</HudhodContext.Provider>;
 }
 
 /**
@@ -87,11 +86,7 @@ export function registerReactPanel(
   Component: ComponentType,
   options: RegisterPanelOptions,
 ): Disposable {
-  return hudhod.window.registerPanel(
-    id,
-    reactRenderer(hudhod, Component),
-    options,
-  );
+  return hudhod.window.registerPanel(id, reactRenderer(hudhod, Component), options);
 }
 
 /** Registers a view body whose React tree has the same lifecycle as a panel. */
@@ -101,17 +96,10 @@ export function registerReactView(
   Component: ComponentType,
   options: RegisterViewOptions,
 ): Disposable {
-  return hudhod.window.registerView(
-    id,
-    reactRenderer(hudhod, Component),
-    options,
-  );
+  return hudhod.window.registerView(id, reactRenderer(hudhod, Component), options);
 }
 
-function reactRenderer(
-  hudhod: HudhodApi,
-  Component: ComponentType,
-): PanelRenderer {
+function reactRenderer(hudhod: HudhodApi, Component: ComponentType): PanelRenderer {
   return (container) => {
     const root = createRoot(container);
     root.render(

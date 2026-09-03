@@ -5,7 +5,7 @@
   "endOfLine": "lf",
 
   "sortImports": {
-    "internalPattern": ["@/"],
+    "internalPattern": ["@hudhod/"],
     "groups": [
       "builtin",
       "external",
@@ -17,19 +17,11 @@
     "newlinesBetween": true
   },
 
-  "sortTailwindcss": {
-    "stylesheet": "app/globals.css",
-    "functions": ["cn", "clsx", "cva", "tw"]
-  },
-
   "ignorePatterns": [
-    ".next/**",
     "out/**",
     "build/**",
-    "next-env.d.ts",
     "pnpm-lock.yaml",
-    "drizzle/**",
-    "supabase/**",
-    "public/**"
+    "packages/*/dist/**",
+    "examples/extensions/*/dist/**"
   ]
 }

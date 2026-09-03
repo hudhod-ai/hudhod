@@ -16,10 +16,7 @@ packages/*/coverage
 
 # workspace package build output (publish only)
 packages/*/dist
-
-# next.js
-/.next/
-/out/
+examples/extensions/*/dist
 
 # production
 /build
@@ -42,4 +39,3 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts

@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  ServiceRegistry,
-  createServiceIdentifier,
-} from "./service-registry";
+import { ServiceRegistry, createServiceIdentifier } from "./service-registry";
 
 describe("ServiceRegistry", () => {
   it("constructs services lazily", () => {
@@ -27,9 +24,7 @@ describe("ServiceRegistry", () => {
   });
 
   it("passes the registry into a factory for dependency resolution", () => {
-    const dependencyId = createServiceIdentifier<{ value: number }>(
-      "dependency",
-    );
+    const dependencyId = createServiceIdentifier<{ value: number }>("dependency");
     const parentId = createServiceIdentifier<{ child: number }>("parent");
     const services = new ServiceRegistry();
     services.register(dependencyId, () => ({ value: 42 }));

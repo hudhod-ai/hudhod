@@ -8,8 +8,9 @@
  * @packageDocumentation
  */
 
-import type { ExtensionManifest } from "@hudhod/sdk";
 import { z } from "zod";
+
+import type { ExtensionManifest } from "@hudhod/sdk";
 
 import { parseKeybinding } from "../keybindings/keybinding-parser";
 
@@ -111,13 +112,10 @@ export const extensionManifestSchema = z
       .optional(),
   })
   .superRefine((manifest, context) => {
-    const commandIds =
-      manifest.contributes?.commands?.map((command) => command.id) ?? [];
-    const panelIds =
-      manifest.contributes?.panels?.map((panel) => panel.id) ?? [];
+    const commandIds = manifest.contributes?.commands?.map((command) => command.id) ?? [];
+    const panelIds = manifest.contributes?.panels?.map((panel) => panel.id) ?? [];
     const viewContainerIds =
-      manifest.contributes?.viewContainers?.map((container) => container.id) ??
-      [];
+      manifest.contributes?.viewContainers?.map((container) => container.id) ?? [];
     const views = manifest.contributes?.views ?? [];
     const viewIds = views.map((view) => view.id);
     const keybindings = manifest.contributes?.keybindings ?? [];

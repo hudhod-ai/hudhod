@@ -1,5 +1,6 @@
-import type { Extension, HudhodApi } from "@hudhod/sdk";
 import { describe, expect, it, vi } from "vitest";
+
+import type { Extension, HudhodApi } from "@hudhod/sdk";
 
 import { PanelRegistry } from "../panels/panel-registry";
 import { ViewRegistry } from "../views/view-registry";
@@ -97,9 +98,7 @@ describe("InProcessExtensionHost", () => {
 
   it("deduplicates concurrent activations", async () => {
     let resolveActivation: () => void = () => {};
-    const activate = vi.fn(
-      () => new Promise<void>((resolve) => (resolveActivation = resolve)),
-    );
+    const activate = vi.fn(() => new Promise<void>((resolve) => (resolveActivation = resolve)));
     const host = createHost();
     host.register(extension({ activate }));
 
@@ -202,12 +201,8 @@ describe("InProcessExtensionHost", () => {
       }),
     );
 
-    await expect(host.activate("acme.demo")).rejects.toThrow(
-      "activation failed",
-    );
-    expect(host.getExtensions()).toMatchObject([
-      { status: "failed", error: "activation failed" },
-    ]);
+    await expect(host.activate("acme.demo")).rejects.toThrow("activation failed");
+    expect(host.getExtensions()).toMatchObject([{ status: "failed", error: "activation failed" }]);
   });
 
   it("rejects activation of an unknown id", async () => {

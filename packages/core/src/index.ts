@@ -22,14 +22,8 @@ export { WindowService } from "./window/window-service";
 export type { WindowUiProvider } from "./window/window-service";
 export { DiffService } from "./diff/diff-service";
 export { InProcessExtensionHost } from "./extensions/extension-host";
-export type {
-  ExtensionInfo,
-  ExtensionStatus,
-} from "./extensions/extension-host";
-export {
-  extensionManifestSchema,
-  parseExtensionManifest,
-} from "./extensions/manifest";
+export type { ExtensionInfo, ExtensionStatus } from "./extensions/extension-host";
+export { extensionManifestSchema, parseExtensionManifest } from "./extensions/manifest";
 export { PanelRegistry } from "./panels/panel-registry";
 export type { PanelInfo } from "./panels/panel-registry";
 export { ViewRegistry } from "./views/view-registry";
@@ -45,31 +39,18 @@ export type {
   ProviderWatchOptions,
 } from "./fs/provider";
 export { FakeProcessSpawner } from "./process/fake-spawner";
-export type {
-  FakeCommandBehaviour,
-  RecordedSpawn,
-} from "./process/fake-spawner";
+export type { FakeCommandBehaviour, RecordedSpawn } from "./process/fake-spawner";
 export {
   DEFAULT_EXEC_TIMEOUT_MS,
   DEFAULT_MAX_OUTPUT_BYTES,
   ProcessService,
 } from "./process/process-service";
 export type { ProcessServiceOptions } from "./process/process-service";
-export type {
-  ProcessSpawner,
-  SpawnedProcess,
-  SpawnerOptions,
-} from "./process/spawner";
+export type { ProcessSpawner, SpawnedProcess, SpawnerOptions } from "./process/spawner";
 export { SearchService } from "./search/search-service";
 export { createHudhodRuntime } from "./runtime/runtime";
-export type {
-  CreateHudhodRuntimeOptions,
-  HudhodRuntime,
-} from "./runtime/runtime";
-export {
-  ServiceRegistry,
-  createServiceIdentifier,
-} from "./services/service-registry";
+export type { CreateHudhodRuntimeOptions, HudhodRuntime } from "./runtime/runtime";
+export { ServiceRegistry, createServiceIdentifier } from "./services/service-registry";
 export type { ServiceIdentifier } from "./services/service-registry";
 export {
   DEFAULT_FILES_EXCLUDE,
@@ -78,7 +59,4 @@ export {
   DEFAULT_WATCHER_EXCLUDE,
   createWorkspaceConfig,
 } from "./workspace/config";
-export type {
-  WorkspaceConfig,
-  WorkspaceConfigOverrides,
-} from "./workspace/config";
+export type { WorkspaceConfig, WorkspaceConfigOverrides } from "./workspace/config";

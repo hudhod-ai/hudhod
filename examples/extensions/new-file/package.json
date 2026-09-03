@@ -1,0 +1,28 @@
+{
+  "name": "@hudhod/extension-new-file",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Built-in extension for creating new files with Ctrl+N",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hudhod/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vite": "^6.2.0",
+    "vitest": "^3.2.0"
+  }
+}

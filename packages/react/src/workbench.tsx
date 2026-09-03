@@ -1,4 +1,3 @@
-import { ChevronDown, ChevronRight, Puzzle } from "lucide-react";
 import {
   DockviewReact,
   themeGithubDarkSpaced,
@@ -9,6 +8,7 @@ import {
   type IDockviewPanelHeaderProps,
   type IDockviewPanelProps,
 } from "dockview-react";
+import { ChevronDown, ChevronRight, Puzzle } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ComponentType, ElementType, ReactElement, SVGProps } from "react";
 
@@ -45,9 +45,7 @@ export interface HudhodWorkbenchProps {
   readonly host: HudhodReactHost;
   readonly editor: ComponentType<IDockviewPanelProps>;
   /** Additional native Dockview components. Hudhod reserves `hudhod-extension-panel`. */
-  readonly nativeComponents?: Readonly<
-    Record<string, ComponentType<IDockviewPanelProps>>
-  >;
+  readonly nativeComponents?: Readonly<Record<string, ComponentType<IDockviewPanelProps>>>;
   readonly colorMode?: "light" | "dark";
   /** Activity bar placement and rendering overrides. */
   readonly activityBar?: HudhodActivityBarOptions;
@@ -89,26 +87,20 @@ export function HudhodWorkbench({
   const [, rerender] = useState(0);
   const [dockviewApi, setDockviewApi] = useState<DockviewApi | null>(null);
   const activityBarPosition = activityBar?.position ?? "left";
-  const components: Record<
-    string,
-    (props: IDockviewPanelProps) => ReactElement
-  > = {
+  const components: Record<string, (props: IDockviewPanelProps) => ReactElement> = {
     ...nativeComponents,
     editor: (props) => <Editor {...props} />,
     [EXTENSION_PANEL_HOST]: (props) => <ContainerHost host={host} {...props} />,
   };
 
   useEffect(() => {
-    const subscription = host.onDidChangeRenderers(() =>
-      rerender((value) => value + 1),
-    );
+    const subscription = host.onDidChangeRenderers(() => rerender((value) => value + 1));
     return () => subscription.dispose();
   }, [host]);
 
   useEffect(() => {
     if (!dockviewApi || !onPanelChange) return;
-    const notify = () =>
-      onPanelChange(dockviewApi.panels.map((panel) => panel.id));
+    const notify = () => onPanelChange(dockviewApi.panels.map((panel) => panel.id));
     const addSubscription = dockviewApi.onDidAddPanel(notify);
     const removeSubscription = dockviewApi.onDidRemovePanel(notify);
     notify();
@@ -122,25 +114,16 @@ export function HudhodWorkbench({
 
   const activityBarElement =
     activityBarPosition === "hidden" ? null : (
-      <HudhodActivityBar
-        host={host}
-        dockviewApi={dockviewApi}
-        {...activityBar}
-      />
+      <HudhodActivityBar host={host} dockviewApi={dockviewApi} {...activityBar} />
     );
-  const isHorizontal =
-    activityBarPosition === "top" || activityBarPosition === "bottom";
+  const isHorizontal = activityBarPosition === "top" || activityBarPosition === "bottom";
   const dockview = (
     <DockviewReact
       {...dockviewProps}
       className={`hudhod-dockview ${className} ${showPanelHeaders ? "" : "hudhod-workbench--hide-panel-headers"}`}
       components={components}
-      defaultTabComponent={
-        dockviewProps?.defaultTabComponent ?? HudhodDefaultTab
-      }
-      theme={
-        colorMode === "dark" ? themeGithubDarkSpaced : themeGithubLightSpaced
-      }
+      defaultTabComponent={dockviewProps?.defaultTabComponent ?? HudhodDefaultTab}
+      theme={colorMode === "dark" ? themeGithubDarkSpaced : themeGithubLightSpaced}
       onReady={({ api }) => {
         api.addPanel({
           id: "editor",
@@ -162,14 +145,10 @@ export function HudhodWorkbench({
   );
 
   return (
-    <div
-      className={`hudhod-workbench ${isHorizontal ? "hudhod-workbench--horizontal" : ""}`}
-    >
-      {(activityBarPosition === "left" || activityBarPosition === "top") &&
-        activityBarElement}
+    <div className={`hudhod-workbench ${isHorizontal ? "hudhod-workbench--horizontal" : ""}`}>
+      {(activityBarPosition === "left" || activityBarPosition === "top") && activityBarElement}
       {dockview}
-      {(activityBarPosition === "right" || activityBarPosition === "bottom") &&
-        activityBarElement}
+      {(activityBarPosition === "right" || activityBarPosition === "bottom") && activityBarElement}
     </div>
   );
 }
@@ -200,10 +179,7 @@ export function HudhodActivityBar({
       {panels.map((panel) => {
         const isOpen = openPanelIds.has(panel.id);
         const open = () => void host.api.window.openPanel(panel.id);
-        if (renderItem)
-          return (
-            <span key={panel.id}>{renderItem({ panel, isOpen, open })}</span>
-          );
+        if (renderItem) return <span key={panel.id}>{renderItem({ panel, isOpen, open })}</span>;
         const Icon = isIcon(panel.icon) ? panel.icon : Puzzle;
         return (
           <button
@@ -241,13 +217,10 @@ function usePanels(host: HudhodReactHost) {
 }
 
 function useOpenPanelIds(dockviewApi: DockviewApi | null | undefined) {
-  const [panelIds, setPanelIds] = useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [panelIds, setPanelIds] = useState<ReadonlySet<string>>(() => new Set());
   useEffect(() => {
     if (!dockviewApi) return;
-    const sync = () =>
-      setPanelIds(new Set(dockviewApi.panels.map((panel) => panel.id)));
+    const sync = () => setPanelIds(new Set(dockviewApi.panels.map((panel) => panel.id)));
     const addSubscription = dockviewApi.onDidAddPanel(sync);
     const removeSubscription = dockviewApi.onDidRemovePanel(sync);
     sync();
@@ -270,15 +243,12 @@ function createController(
       for (const view of host.views.getViewsForContainer(id)) {
         await host.extensions.activateByEvent(`onView:${view.id}`);
       }
-      const panel = host.panels
-        .getPanels()
-        .find((candidate) => candidate.id === id);
+      const panel = host.panels.getPanels().find((candidate) => candidate.id === id);
       if (!panel || api.getPanel(id)) {
         api.getPanel(id)?.focus();
         return;
       }
-      const position =
-        getPanelPosition?.(panel, api) ?? defaultPanelPosition(panel, api);
+      const position = getPanelPosition?.(panel, api) ?? defaultPanelPosition(panel, api);
       const renderer = host.panelRenderers.get(id);
       const options = renderer?.options;
       api.addPanel({
@@ -286,14 +256,8 @@ function createController(
         title: panel.title,
         component: EXTENSION_PANEL_HOST,
         position,
-        initialWidth:
-          options && "initialWidth" in options
-            ? options.initialWidth
-            : undefined,
-        initialHeight:
-          options && "initialHeight" in options
-            ? options.initialHeight
-            : undefined,
+        initialWidth: options && "initialWidth" in options ? options.initialWidth : undefined,
+        initialHeight: options && "initialHeight" in options ? options.initialHeight : undefined,
       });
     },
     async closePanel(id: string) {
@@ -322,17 +286,12 @@ function defaultPanelPosition(
   return { referencePanel, direction };
 }
 
-function ContainerHost({
-  host,
-  api,
-}: IDockviewPanelProps & { host: HudhodReactHost }) {
+function ContainerHost({ host, api }: IDockviewPanelProps & { host: HudhodReactHost }) {
   const [, rerender] = useState(0);
   const views = useViews(host, api.id);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   useEffect(() => {
-    const subscription = host.onDidChangeRenderers(() =>
-      rerender((value) => value + 1),
-    );
+    const subscription = host.onDidChangeRenderers(() => rerender((value) => value + 1));
     return () => subscription.dispose();
   }, [host]);
   const sections = [
@@ -358,8 +317,7 @@ function ContainerHost({
     ),
   ];
   if (sections.length === 0) return <div className="hudhod-renderer-mount" />;
-  if (sections.length === 1)
-    return <RendererMount entry={sections[0]!.entry} />;
+  if (sections.length === 1) return <RendererMount entry={sections[0]!.entry} />;
   return (
     <div className="hudhod-view-container">
       {sections.map((section) => {
@@ -385,11 +343,7 @@ function ContainerHost({
                 })
               }
             >
-              {isCollapsed ? (
-                <ChevronRight size={14} />
-              ) : (
-                <ChevronDown size={14} />
-              )}
+              {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
               {section.title}
             </button>
             {!isCollapsed && (
@@ -405,9 +359,7 @@ function ContainerHost({
 }
 
 function useViews(host: HudhodReactHost, containerId: string) {
-  const [views, setViews] = useState(() =>
-    host.views.getViewsForContainer(containerId),
-  );
+  const [views, setViews] = useState(() => host.views.getViewsForContainer(containerId));
   useEffect(() => {
     setViews(host.views.getViewsForContainer(containerId));
     const subscription = host.views.onDidChangeViews(() =>
@@ -442,7 +394,6 @@ function RendererMount({ entry }: { entry: HudhodReactRenderer }) {
 
 function isIcon(icon: unknown): icon is ElementType<SVGProps<SVGSVGElement>> {
   return (
-    typeof icon === "function" ||
-    (typeof icon === "object" && icon !== null && "$$typeof" in icon)
+    typeof icon === "function" || (typeof icon === "object" && icon !== null && "$$typeof" in icon)
   );
 }

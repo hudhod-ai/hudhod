@@ -5,8 +5,8 @@
  */
 
 import type { HudhodApi } from "./api";
-import type { Disposable } from "./lifecycle";
 import type { KeybindingContribution } from "./keybindings";
+import type { Disposable } from "./lifecycle";
 
 /**
  * When an extension should be loaded.

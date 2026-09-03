@@ -6,10 +6,7 @@ describe("PanelRegistry", () => {
   it("registers a panel and defaults its location to bottom", () => {
     const panels = new PanelRegistry();
 
-    panels.registerPanel(
-      { id: "demo.logs", title: "Logs" },
-      { extensionId: "demo" },
-    );
+    panels.registerPanel({ id: "demo.logs", title: "Logs" }, { extensionId: "demo" });
 
     expect(panels.getPanels()).toEqual([
       {
@@ -43,11 +40,7 @@ describe("PanelRegistry", () => {
     panels.registerPanel({ id: "a", title: "A" });
     panels.registerPanel({ id: "b", title: "B" });
 
-    expect(panels.getPanels().map((panel) => panel.id)).toEqual([
-      "a",
-      "b",
-      "c",
-    ]);
+    expect(panels.getPanels().map((panel) => panel.id)).toEqual(["a", "b", "c"]);
   });
 
   it("lets the last registration win and restores the previous one on dispose", () => {

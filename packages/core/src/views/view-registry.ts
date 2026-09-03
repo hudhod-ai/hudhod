@@ -59,11 +59,7 @@ export class ViewRegistry implements Disposable {
     return result.sort((left, right) => {
       if (left.order === undefined && right.order !== undefined) return 1;
       if (left.order !== undefined && right.order === undefined) return -1;
-      if (
-        left.order !== undefined &&
-        right.order !== undefined &&
-        left.order !== right.order
-      ) {
+      if (left.order !== undefined && right.order !== undefined && left.order !== right.order) {
         return left.order - right.order;
       }
       return left.registrationOrder - right.registrationOrder;

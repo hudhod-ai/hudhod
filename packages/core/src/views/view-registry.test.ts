@@ -43,12 +43,7 @@ describe("ViewRegistry", () => {
       order: 0,
     });
 
-    expect(views.getViews().map((view) => view.id)).toEqual([
-      "zero",
-      "second",
-      "first",
-      "later",
-    ]);
+    expect(views.getViews().map((view) => view.id)).toEqual(["zero", "second", "first", "later"]);
   });
 
   it("filters views by container", () => {
@@ -60,9 +55,7 @@ describe("ViewRegistry", () => {
     });
     views.registerView({ id: "search", title: "Search", container: "search" });
 
-    expect(
-      views.getViewsForContainer("explorer").map((view) => view.id),
-    ).toEqual(["outline"]);
+    expect(views.getViewsForContainer("explorer").map((view) => view.id)).toEqual(["outline"]);
   });
 
   it("notifies changes and stops notifying after disposal", () => {
