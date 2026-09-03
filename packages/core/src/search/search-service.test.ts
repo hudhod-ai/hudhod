@@ -31,13 +31,13 @@ describe("SearchService", () => {
     it("matches by extension across directories", async () => {
       const found = await search.findFiles("**/*.ts");
 
-      expect(found.sort()).toEqual(["/src/index.ts", "/src/lib/util.test.ts", "/src/lib/util.ts"]);
+      expect(found.toSorted()).toEqual(["/src/index.ts", "/src/lib/util.test.ts", "/src/lib/util.ts"]);
     });
 
     it("matches within a directory prefix", async () => {
       const found = await search.findFiles("src/lib/**");
 
-      expect(found.sort()).toEqual(["/src/lib/util.test.ts", "/src/lib/util.ts"]);
+      expect(found.toSorted()).toEqual(["/src/lib/util.test.ts", "/src/lib/util.ts"]);
     });
 
     it("matches a specific file", async () => {
@@ -47,7 +47,7 @@ describe("SearchService", () => {
     it("skips excluded directories by default", async () => {
       const found = await search.findFiles("**/*");
 
-      expect(found.sort()).toEqual([
+      expect(found.toSorted()).toEqual([
         "/package.json",
         "/src/index.ts",
         "/src/lib/util.test.ts",
@@ -59,7 +59,7 @@ describe("SearchService", () => {
     it("searches excluded directories when the exclusion is lifted", async () => {
       const found = await search.findFiles("**/*", { exclude: [] });
 
-      expect(found.sort()).toEqual([
+      expect(found.toSorted()).toEqual([
         "/node_modules/react/index",
         "/package.json",
         "/src/index.ts",

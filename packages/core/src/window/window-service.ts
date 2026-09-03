@@ -18,9 +18,6 @@ import type {
   PanelRenderer,
 } from "@hudhod/sdk";
 
-import { createError } from "../base/errors";
-import { Emitter } from "../base/event";
-
 /**
  * Host-supplied implementation of UI operations.
  *
@@ -34,8 +31,16 @@ export interface WindowUiProvider {
     items: readonly QuickPickItem[],
     options?: QuickPickOptions,
   ): Promise<string | undefined>;
-  registerPanel(id: string, render: PanelRenderer, options: RegisterPanelOptions): Disposable;
-  registerView(id: string, render: PanelRenderer, options: RegisterViewOptions): Disposable;
+  registerPanel(
+    id: string,
+    render: PanelRenderer,
+    options: RegisterPanelOptions,
+  ): Disposable;
+  registerView(
+    id: string,
+    render: PanelRenderer,
+    options: RegisterViewOptions,
+  ): Disposable;
   openPanel(id: string): Promise<void>;
   closePanel(id: string): Promise<boolean>;
   openFile(path: string): Promise<void>;
@@ -60,7 +65,10 @@ export class WindowService implements WindowApi, Disposable {
     this.#provider = provider;
   }
 
-  async showMessage(message: string, severity?: MessageSeverity): Promise<void> {
+  async showMessage(
+    message: string,
+    severity?: MessageSeverity,
+  ): Promise<void> {
     return this.#provider.showMessage(message, severity);
   }
 
@@ -75,11 +83,19 @@ export class WindowService implements WindowApi, Disposable {
     return this.#provider.showQuickPick(items, options);
   }
 
-  registerPanel(id: string, render: PanelRenderer, options: RegisterPanelOptions): Disposable {
+  registerPanel(
+    id: string,
+    render: PanelRenderer,
+    options: RegisterPanelOptions,
+  ): Disposable {
     return this.#provider.registerPanel(id, render, options);
   }
 
-  registerView(id: string, render: PanelRenderer, options: RegisterViewOptions): Disposable {
+  registerView(
+    id: string,
+    render: PanelRenderer,
+    options: RegisterViewOptions,
+  ): Disposable {
     return this.#provider.registerView(id, render, options);
   }
 

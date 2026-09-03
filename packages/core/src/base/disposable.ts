@@ -106,7 +106,10 @@ export class DisposableStore implements Disposable {
 /** Disposes items newest-first, collecting rather than propagating errors. */
 function disposeAll(items: Iterable<Disposable>): unknown[] {
   const errors: unknown[] = [];
-  for (const item of [...items].reverse()) {
+  const snapshot = Array.from(items);
+  for (let index = snapshot.length - 1; index >= 0; index -= 1) {
+    const item = snapshot[index];
+    if (!item) continue;
     try {
       item.dispose();
     } catch (error) {

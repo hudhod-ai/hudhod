@@ -78,10 +78,12 @@ export class ProcessService implements ProcessApi {
   }
 
   /** Fires whenever a process starts. */
-  readonly onDidStartProcess: Event<ProcessInfo> = (listener) => this.#startEmitter.event(listener);
+  readonly onDidStartProcess: Event<ProcessInfo> = (listener) =>
+    this.#startEmitter.event(listener);
 
   /** Fires whenever a process exits, for any reason. */
-  readonly onDidExitProcess: Event<ProcessInfo> = (listener) => this.#exitEmitter.event(listener);
+  readonly onDidExitProcess: Event<ProcessInfo> = (listener) =>
+    this.#exitEmitter.event(listener);
 
   async spawn(
     command: string,
@@ -189,7 +191,14 @@ export class ProcessService implements ProcessApi {
   }
 
   async list(): Promise<ProcessInfo[]> {
-    return [...this.#tracked.values()].map((tracked) => ({ ...tracked.info }));
+    return Array.from(this.#tracked.values(), ({ info }) => ({
+      id: info.id,
+      command: info.command,
+      args: info.args,
+      startedAt: info.startedAt,
+      status: info.status,
+      exitCode: info.exitCode,
+    }));
   }
 
   async kill(id: string): Promise<boolean> {
@@ -227,7 +236,6 @@ export class ProcessService implements ProcessApi {
 
   /** Projects internal bookkeeping into the public handle shape. */
   #toHandle(tracked: Tracked): ProcessHandle {
-    const service = this;
     return {
       get id() {
         return tracked.info.id;
@@ -250,10 +258,10 @@ export class ProcessService implements ProcessApi {
       output: tracked.process.output,
       input: tracked.process.input,
       exit: tracked.process.exit,
-      kill() {
-        void service.kill(tracked.info.id);
+      kill: () => {
+        void this.kill(tracked.info.id);
       },
-      resize(dimensions) {
+      resize: (dimensions) => {
         tracked.process.resize(dimensions);
       },
     };

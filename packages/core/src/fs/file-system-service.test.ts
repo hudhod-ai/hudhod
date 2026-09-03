@@ -232,11 +232,11 @@ describe("FileSystemService", () => {
     });
 
     it("honours a custom exclusion policy", async () => {
-      const provider = InMemoryFileSystemProvider.from({
+      const permissiveProvider = InMemoryFileSystemProvider.from({
         "/src/a.ts": "a",
         "/node_modules/react/index": "x",
       });
-      const permissive = new FileSystemService(provider, {
+      const permissive = new FileSystemService(permissiveProvider, {
         config: createWorkspaceConfig({ filesExclude: [] }),
         debounceMs: 0,
       });
@@ -267,8 +267,8 @@ describe("FileSystemService", () => {
     });
 
     it("collapses repeated events for one path, keeping the last", async () => {
-      const provider = InMemoryFileSystemProvider.from({});
-      const batched = new FileSystemService(provider, { debounceMs: 5 });
+      const batchedProvider = InMemoryFileSystemProvider.from({});
+      const batched = new FileSystemService(batchedProvider, { debounceMs: 5 });
       const batches: (readonly FileChangeEvent[])[] = [];
       batched.onDidChangeFile((batch) => batches.push(batch));
 
@@ -283,8 +283,8 @@ describe("FileSystemService", () => {
     });
 
     it("delivers several distinct paths in one batch", async () => {
-      const provider = InMemoryFileSystemProvider.from({});
-      const batched = new FileSystemService(provider, { debounceMs: 5 });
+      const batchedProvider = InMemoryFileSystemProvider.from({});
+      const batched = new FileSystemService(batchedProvider, { debounceMs: 5 });
       const batches: (readonly FileChangeEvent[])[] = [];
       batched.onDidChangeFile((batch) => batches.push(batch));
 

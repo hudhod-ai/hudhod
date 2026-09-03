@@ -70,7 +70,7 @@ export class Emitter<T> implements Disposable {
    */
   fire(value: T): void {
     if (this.#disposed) return;
-    for (const listener of [...this.#listeners]) {
+    for (const listener of Array.from(this.#listeners)) {
       try {
         listener(value);
       } catch (error) {

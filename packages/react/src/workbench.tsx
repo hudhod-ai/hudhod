@@ -87,6 +87,7 @@ export function HudhodWorkbench({
   const [, rerender] = useState(0);
   const [dockviewApi, setDockviewApi] = useState<DockviewApi | null>(null);
   const activityBarPosition = activityBar?.position ?? "left";
+  // oxlint-disable react/no-unstable-nested-components -- Dockview component factories need the current host and editor props.
   const components: Record<string, (props: IDockviewPanelProps) => ReactElement> = {
     ...nativeComponents,
     editor: (props) => <Editor {...props} />,
@@ -209,7 +210,6 @@ function HudhodDefaultTab({ api }: IDockviewPanelHeaderProps) {
 function usePanels(host: HudhodReactHost) {
   const [panels, setPanels] = useState(() => host.panels.getPanels());
   useEffect(() => {
-    setPanels(host.panels.getPanels());
     const subscription = host.panels.onDidChangePanels(setPanels);
     return () => subscription.dispose();
   }, [host]);
@@ -338,7 +338,11 @@ function ContainerHost({ host, api }: IDockviewPanelProps & { host: HudhodReactH
               onClick={() =>
                 setCollapsed((current) => {
                   const next = new Set(current);
-                  isCollapsed ? next.delete(section.id) : next.add(section.id);
+                  if (isCollapsed) {
+                    next.delete(section.id);
+                  } else {
+                    next.add(section.id);
+                  }
                   return next;
                 })
               }
@@ -361,7 +365,6 @@ function ContainerHost({ host, api }: IDockviewPanelProps & { host: HudhodReactH
 function useViews(host: HudhodReactHost, containerId: string) {
   const [views, setViews] = useState(() => host.views.getViewsForContainer(containerId));
   useEffect(() => {
-    setViews(host.views.getViewsForContainer(containerId));
     const subscription = host.views.onDidChangeViews(() =>
       setViews(host.views.getViewsForContainer(containerId)),
     );

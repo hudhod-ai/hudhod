@@ -4,7 +4,7 @@ import * as core from "./index";
 
 describe("@hudhod/core public runtime API", () => {
   it("exposes the intentional headless service surface", () => {
-    expect(Object.keys(core).sort()).toEqual([
+    expect(Object.keys(core).toSorted()).toEqual([
       "CancellationTokenNone",
       "CancellationTokenSource",
       "CommandRegistry",

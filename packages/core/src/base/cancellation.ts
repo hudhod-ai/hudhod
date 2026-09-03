@@ -36,17 +36,18 @@ export class CancellationTokenSource implements Disposable {
   readonly token: CancellationToken;
 
   constructor() {
-    const source = this;
+    const isCancelled = () => this.#cancelled;
+    const onCancellationRequested = this.#emitter.event;
     this.token = {
       get isCancellationRequested(): boolean {
-        return source.#cancelled;
+        return isCancelled();
       },
       onCancellationRequested: (listener) => {
-        if (source.#cancelled) {
+        if (isCancelled()) {
           listener();
           return NO_OP_DISPOSABLE;
         }
-        return source.#emitter.event(listener);
+        return onCancellationRequested(listener);
       },
     };
   }

@@ -39,8 +39,9 @@ export class CommandRegistry implements CommandsApi, Disposable {
   readonly #changeEmitter = new Emitter<readonly CommandDescriptor[]>();
 
   /** Fires whenever the command catalog changes. */
-  readonly onDidChangeCommands: Event<readonly CommandDescriptor[]> = (listener) =>
-    this.#changeEmitter.event(listener);
+  readonly onDidChangeCommands: Event<readonly CommandDescriptor[]> = (
+    listener,
+  ) => this.#changeEmitter.event(listener);
 
   /**
    * Registers a command handler.
@@ -53,7 +54,10 @@ export class CommandRegistry implements CommandsApi, Disposable {
     options: RegisterCommandOptions = {},
   ): Disposable {
     if (this.#commands.has(id)) {
-      throw createError("CommandExists", `Command is already registered: ${id}`);
+      throw createError(
+        "CommandExists",
+        `Command is already registered: ${id}`,
+      );
     }
 
     const descriptor: CommandDescriptor = {
@@ -82,7 +86,10 @@ export class CommandRegistry implements CommandsApi, Disposable {
    *
    * @throws A `CommandNotFound` error when no handler is registered for `id`.
    */
-  async executeCommand<T = unknown>(id: string, ...args: readonly unknown[]): Promise<T> {
+  async executeCommand<T = unknown>(
+    id: string,
+    ...args: readonly unknown[]
+  ): Promise<T> {
     const command = this.#commands.get(id);
     if (!command) {
       throw createError("CommandNotFound", `Command not found: ${id}`);
@@ -92,11 +99,21 @@ export class CommandRegistry implements CommandsApi, Disposable {
 
   /** Lists registered commands, alphabetically by title then id. */
   async getCommands(): Promise<CommandDescriptor[]> {
-    return [...this.#commands.values()]
-      .map(({ descriptor }) => ({ ...descriptor }))
-      .sort(
-        (left, right) => left.title.localeCompare(right.title) || left.id.localeCompare(right.id),
-      );
+    const commands = Array.from(this.#commands.values(), ({ descriptor }) =>
+      descriptor.category
+        ? {
+            id: descriptor.id,
+            title: descriptor.title,
+            category: descriptor.category,
+          }
+        : { id: descriptor.id, title: descriptor.title },
+    );
+    return sortedBy(
+      commands,
+      (left, right) =>
+        left.title.localeCompare(right.title) ||
+        left.id.localeCompare(right.id),
+    );
   }
 
   /** Removes all registered commands and listeners. */
@@ -108,6 +125,23 @@ export class CommandRegistry implements CommandsApi, Disposable {
   }
 
   #fireChange(): void {
-    void this.getCommands().then((commands) => this.#changeEmitter.fire(commands));
+    void this.getCommands().then((commands) =>
+      this.#changeEmitter.fire(commands),
+    );
   }
+}
+
+function sortedBy<T>(
+  values: readonly T[],
+  compare: (left: T, right: T) => number,
+): T[] {
+  const result: T[] = [];
+  for (const value of values) {
+    const index = result.findIndex(
+      (candidate) => compare(value, candidate) < 0,
+    );
+    if (index === -1) result.push(value);
+    else result.splice(index, 0, value);
+  }
+  return result;
 }

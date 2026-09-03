@@ -72,7 +72,10 @@ export class FileSystemService implements FileSystemApi, Disposable {
   #flushHandle: ReturnType<typeof setTimeout> | undefined;
   #rootWatch: Disposable | undefined;
 
-  constructor(provider: FileSystemProvider, options: FileSystemServiceOptions = {}) {
+  constructor(
+    provider: FileSystemProvider,
+    options: FileSystemServiceOptions = {},
+  ) {
     this.#provider = provider;
     this.#config = options.config ?? createWorkspaceConfig();
     this.#debounceMs = options.debounceMs ?? CHANGE_DEBOUNCE_MS;
@@ -114,7 +117,11 @@ export class FileSystemService implements FileSystemApi, Disposable {
     return decoder.decode(await this.readFile(path));
   }
 
-  async writeFile(path: string, data: Uint8Array, options: WriteFileOptions = {}): Promise<void> {
+  async writeFile(
+    path: string,
+    data: Uint8Array,
+    options: WriteFileOptions = {},
+  ): Promise<void> {
     const target = normalizePath(path);
     const exists = await this.exists(target);
 
@@ -135,7 +142,10 @@ export class FileSystemService implements FileSystemApi, Disposable {
     await this.writeFile(path, encoder.encode(content), options);
   }
 
-  async createFile(path: string, options: WriteFileOptions = {}): Promise<void> {
+  async createFile(
+    path: string,
+    options: WriteFileOptions = {},
+  ): Promise<void> {
     // Creating implies the file should not already be there.
     await this.writeFile(path, new Uint8Array(0), {
       overwrite: false,
@@ -154,8 +164,9 @@ export class FileSystemService implements FileSystemApi, Disposable {
       missing.push(current);
     }
 
-    // Shallowest first, so each parent exists before its child is created.
-    for (const directory of missing.reverse()) {
+    for (let index = missing.length - 1; index >= 0; index -= 1) {
+      const directory = missing[index];
+      if (!directory) continue;
       await this.#provider.createDirectory(directory);
     }
   }
@@ -166,7 +177,11 @@ export class FileSystemService implements FileSystemApi, Disposable {
     });
   }
 
-  async rename(from: string, to: string, options: MoveOptions = {}): Promise<void> {
+  async rename(
+    from: string,
+    to: string,
+    options: MoveOptions = {},
+  ): Promise<void> {
     const target = normalizePath(to);
     await this.createDirectory(dirname(target));
     await this.#provider.rename(normalizePath(from), target, {
@@ -174,7 +189,11 @@ export class FileSystemService implements FileSystemApi, Disposable {
     });
   }
 
-  async copy(from: string, to: string, options: MoveOptions = {}): Promise<void> {
+  async copy(
+    from: string,
+    to: string,
+    options: MoveOptions = {},
+  ): Promise<void> {
     const source = normalizePath(from);
     const target = normalizePath(to);
     const overwrite = options.overwrite ?? false;
@@ -191,7 +210,11 @@ export class FileSystemService implements FileSystemApi, Disposable {
 
     await this.createDirectory(target);
     for (const entry of await this.#provider.readDirectory(source)) {
-      await this.copy(joinPath(source, entry.name), joinPath(target, entry.name), options);
+      await this.copy(
+        joinPath(source, entry.name),
+        joinPath(target, entry.name),
+        options,
+      );
     }
   }
 
@@ -231,14 +254,16 @@ export class FileSystemService implements FileSystemApi, Disposable {
     const target = normalizePath(path);
     const entries = await this.#provider.readDirectory(target);
 
-    return entries
+    const visible = entries
       .map((entry) => ({
         name: entry.name,
         path: joinPath(target, entry.name),
         type: entry.type,
       }))
-      .filter((entry) => !options.applyExcludes || !this.#isFileExcluded(entry.path))
-      .sort(compareEntries);
+      .filter(
+        (entry) => !options.applyExcludes || !this.#isFileExcluded(entry.path),
+      );
+    return sortedBy(visible, compareEntries);
   }
 
   watch(
@@ -247,12 +272,18 @@ export class FileSystemService implements FileSystemApi, Disposable {
     options: WatchOptions = {},
   ): Disposable {
     const target = normalizePath(path);
-    const isExcluded = options.excludes ? createMatcher(options.excludes) : this.#isWatcherExcluded;
+    const isExcluded = options.excludes
+      ? createMatcher(options.excludes)
+      : this.#isWatcherExcluded;
 
-    return this.#provider.watch(target, { recursive: options.recursive ?? true }, (events) => {
-      const relevant = events.filter((event) => !isExcluded(event.path));
-      if (relevant.length > 0) listener(relevant);
-    });
+    return this.#provider.watch(
+      target,
+      { recursive: options.recursive ?? true },
+      (events) => {
+        const relevant = events.filter((event) => !isExcluded(event.path));
+        if (relevant.length > 0) listener(relevant);
+      },
+    );
   }
 
   /** Stops watching and releases listeners. */
@@ -266,14 +297,18 @@ export class FileSystemService implements FileSystemApi, Disposable {
   /** Starts the workspace-wide watch, if it is not already running. */
   #ensureRootWatch(): void {
     if (this.#rootWatch) return;
-    this.#rootWatch = this.#provider.watch(this.#config.rootPath, { recursive: true }, (events) =>
-      this.#queue(events),
+    this.#rootWatch = this.#provider.watch(
+      this.#config.rootPath,
+      { recursive: true },
+      (events) => this.#queue(events),
     );
   }
 
   /** Buffers events, filtering exclusions, and schedules a batched delivery. */
   #queue(events: readonly FileChangeEvent[]): void {
-    const relevant = events.filter((event) => !this.#isWatcherExcluded(event.path));
+    const relevant = events.filter(
+      (event) => !this.#isWatcherExcluded(event.path),
+    );
     if (relevant.length === 0) return;
 
     this.#pending.push(...relevant);
@@ -306,13 +341,30 @@ function compareEntries(a: DirectoryEntry, b: DirectoryEntry): number {
   return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
 }
 
+function sortedBy<T>(
+  values: readonly T[],
+  compare: (left: T, right: T) => number,
+): T[] {
+  const result: T[] = [];
+  for (const value of values) {
+    const index = result.findIndex(
+      (candidate) => compare(value, candidate) < 0,
+    );
+    if (index === -1) result.push(value);
+    else result.splice(index, 0, value);
+  }
+  return result;
+}
+
 /**
  * Collapses repeated events for one path, keeping the last.
  *
  * A create followed by a delete within the same tick means the file is gone;
  * reporting both would force every consumer to reason about ordering.
  */
-function dedupeChanges(events: readonly FileChangeEvent[]): readonly FileChangeEvent[] {
+function dedupeChanges(
+  events: readonly FileChangeEvent[],
+): readonly FileChangeEvent[] {
   const latest = new Map<string, FileChangeEvent>();
   for (const event of events) {
     latest.set(event.path, event);

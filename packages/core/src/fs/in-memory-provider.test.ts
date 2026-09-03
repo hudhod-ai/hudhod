@@ -249,7 +249,7 @@ describe("InMemoryFileSystemProvider", () => {
         "/src/lib/b.ts": "y",
       });
 
-      const names = (await seeded.readDirectory("/src")).map((entry) => entry.name).sort();
+      const names = (await seeded.readDirectory("/src")).map((entry) => entry.name).toSorted();
 
       expect(names).toEqual(["a.ts", "lib"]);
     });
@@ -260,7 +260,7 @@ describe("InMemoryFileSystemProvider", () => {
         "/src/b.ts": "y",
       });
 
-      const names = (await seeded.readDirectory("/")).map((entry) => entry.name).sort();
+      const names = (await seeded.readDirectory("/")).map((entry) => entry.name).toSorted();
 
       expect(names).toEqual(["a.ts", "src"]);
     });

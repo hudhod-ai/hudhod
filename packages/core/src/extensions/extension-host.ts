@@ -66,7 +66,10 @@ export class InProcessExtensionHost implements Disposable {
   readonly #extensions = new Map<string, RegisteredExtension>();
   #disposed = false;
 
-  constructor(hudhod: HudhodApi, registries: { panels: PanelRegistry; views: ViewRegistry }) {
+  constructor(
+    hudhod: HudhodApi,
+    registries: { panels: PanelRegistry; views: ViewRegistry },
+  ) {
     this.#hudhod = hudhod;
     this.#panels = registries.panels;
     this.#views = registries.views;
@@ -151,11 +154,18 @@ export class InProcessExtensionHost implements Disposable {
 
   /** Lists registered extensions without exposing mutable host state. */
   getExtensions(): readonly ExtensionInfo[] {
-    return [...this.#extensions.values()].map((registered) => ({
-      manifest: registered.manifest,
-      status: registered.status,
-      ...(registered.error ? { error: registered.error } : {}),
-    }));
+    return Array.from(this.#extensions.values(), (registered) =>
+      registered.error
+        ? {
+            manifest: registered.manifest,
+            status: registered.status,
+            error: registered.error,
+          }
+        : {
+            manifest: registered.manifest,
+            status: registered.status,
+          },
+    );
   }
 
   /** Activates every extension that declared `event`. */
@@ -171,7 +181,8 @@ export class InProcessExtensionHost implements Disposable {
   async activate(extensionId: string): Promise<void> {
     this.#assertActive();
     const registered = this.#extensions.get(extensionId);
-    if (!registered) throw new Error(`Extension is not registered: ${extensionId}`);
+    if (!registered)
+      throw new Error(`Extension is not registered: ${extensionId}`);
     await this.#activate(registered);
   }
 
@@ -223,7 +234,8 @@ export class InProcessExtensionHost implements Disposable {
         registered.status = "active";
       } catch (error) {
         registered.status = "failed";
-        registered.error = error instanceof Error ? error.message : String(error);
+        registered.error =
+          error instanceof Error ? error.message : String(error);
         registered.subscriptions.dispose();
         throw error;
       } finally {

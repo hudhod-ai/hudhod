@@ -108,7 +108,9 @@ export class InMemoryFileSystemProvider implements FileSystemProvider {
 
   /** Every path currently stored, sorted. Intended for test assertions. */
   snapshot(): string[] {
-    return [...this.#nodes.keys()].sort();
+    return sortedBy(Array.from(this.#nodes.keys()), (left, right) =>
+      left.localeCompare(right),
+    );
   }
 
   async readFile(path: string): Promise<Uint8Array> {
@@ -179,7 +181,11 @@ export class InMemoryFileSystemProvider implements FileSystemProvider {
     this.#emit([{ type: "deleted", path }]);
   }
 
-  async rename(from: string, to: string, options: { overwrite: boolean }): Promise<void> {
+  async rename(
+    from: string,
+    to: string,
+    options: { overwrite: boolean },
+  ): Promise<void> {
     const node = this.#nodes.get(from);
     if (!node) throw fileNotFound(from);
 
@@ -274,9 +280,12 @@ export class InMemoryFileSystemProvider implements FileSystemProvider {
   /** Every path strictly beneath `path`, deepest first so deletion is safe. */
   #descendantsOf(path: string): string[] {
     const prefix = path === ROOT ? ROOT : `${path}/`;
-    return [...this.#nodes.keys()]
-      .filter((candidate) => candidate !== path && candidate.startsWith(prefix))
-      .sort((a, b) => b.length - a.length);
+    return sortedBy(
+      Array.from(this.#nodes.keys()).filter(
+        (candidate) => candidate !== path && candidate.startsWith(prefix),
+      ),
+      (left, right) => right.length - left.length,
+    );
   }
 
   /** Delivers events to watchers whose scope covers them. */
@@ -291,4 +300,19 @@ export class InMemoryFileSystemProvider implements FileSystemProvider {
       if (relevant.length > 0) watcher.listener(relevant);
     }
   }
+}
+
+function sortedBy<T>(
+  values: readonly T[],
+  compare: (left: T, right: T) => number,
+): T[] {
+  const result: T[] = [];
+  for (const value of values) {
+    const index = result.findIndex(
+      (candidate) => compare(value, candidate) < 0,
+    );
+    if (index === -1) result.push(value);
+    else result.splice(index, 0, value);
+  }
+  return result;
 }
