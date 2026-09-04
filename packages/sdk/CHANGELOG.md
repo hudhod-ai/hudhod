@@ -1,5 +1,11 @@
 # @hudhod/sdk
 
+## 1.0.0
+
+### Major Changes
+
+- c9be30a: Add a proper initial width config for both panel and panel views
+
 ## 0.2.0
 
 ### Minor Changes
