@@ -1,6 +1,6 @@
 {
   "name": "@hudhod/sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Public API surface for building hudhod extensions — an in-browser IDE runtime powered by WebContainers.",
   "keywords": [
     "browser-ide",

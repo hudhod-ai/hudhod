@@ -1,5 +1,11 @@
 # @hudhod/sdk
 
+## 0.2.0
+
+### Minor Changes
+
+- e813cbe: Added support for having inital width option for react views inside panels
+
 ## Unreleased
 
 - Initial API surface: `fs`, `workspace`, `search`, `diff`, `process`, `terminal`,
