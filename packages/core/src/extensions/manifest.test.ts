@@ -38,7 +38,14 @@ describe("parseExtensionManifest", () => {
             location: "right",
           },
         ],
-        viewContainers: [{ id: "acme.todo-finder", title: "TODO Finder", location: "left" }],
+        viewContainers: [
+          {
+            id: "acme.todo-finder",
+            title: "TODO Finder",
+            location: "left",
+            initialWidth: 320,
+          },
+        ],
         views: [
           {
             id: "acme.todo-finder.results",
@@ -51,6 +58,7 @@ describe("parseExtensionManifest", () => {
     });
 
     expect(manifest.contributes?.panels?.[0]?.location).toBe("right");
+    expect(manifest.contributes?.viewContainers?.[0]?.initialWidth).toBe(320);
     expect(manifest.contributes?.views?.[0]?.container).toBe("acme.todo-finder");
   });
 

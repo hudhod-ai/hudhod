@@ -27,6 +27,8 @@ export interface PanelInfo {
   readonly icon?: unknown;
   /** Dock location, defaulted to `"bottom"` when the contribution omits it. */
   readonly location: "left" | "right" | "bottom" | "center";
+  /** Initial width in pixels, for `left` and `right` panels. */
+  readonly initialWidth?: number;
   /** Whether the panel comes from an extension or the built-in shell. */
   readonly source: "extension" | "builtin";
   /** Id of the owning extension, when the source is an extension. */
@@ -71,6 +73,7 @@ export class PanelRegistry implements Disposable {
       title: contribution.title,
       icon: contribution.icon,
       location: contribution.location ?? "bottom",
+      initialWidth: contribution.initialWidth,
       source: options?.source ?? "extension",
       extensionId: options?.extensionId,
     };
