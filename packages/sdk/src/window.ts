@@ -68,6 +68,8 @@ export interface RegisterPanelOptions {
 export interface RegisterViewOptions {
   /** Header title declared by the view contribution. */
   readonly title: string;
+  /** Initial width in pixels for the view's host panel. */
+  readonly initialWidth?: number;
 }
 
 /**
