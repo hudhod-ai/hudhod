@@ -39,6 +39,38 @@ describe("InProcessExtensionHost", () => {
     expect(host.getExtensions()).toMatchObject([{ status: "registered" }]);
   });
 
+  it("preserves a view container's initial width on its host panel", () => {
+    const panels = new PanelRegistry();
+    const host = createHost(panels);
+
+    host.register(
+      extension({
+        manifest: {
+          id: "acme.demo",
+          name: "Demo",
+          version: "1.0.0",
+          contributes: {
+            viewContainers: [
+              {
+                id: "acme.demo.explorer",
+                title: "Explorer",
+                location: "left",
+                initialWidth: 320,
+              },
+            ],
+          },
+        },
+      }),
+    );
+
+    expect(panels.getPanels()).toContainEqual(
+      expect.objectContaining({
+        id: "acme.demo.explorer",
+        initialWidth: 320,
+      }),
+    );
+  });
+
   it("activates extensions matching an event", async () => {
     const activate = vi.fn();
     const host = createHost();

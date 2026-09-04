@@ -34,6 +34,19 @@ describe("PanelRegistry", () => {
     });
   });
 
+  it("preserves a panel's initial width", () => {
+    const panels = new PanelRegistry();
+
+    panels.registerPanel({
+      id: "shell.explorer",
+      title: "Explorer",
+      location: "left",
+      initialWidth: 320,
+    });
+
+    expect(panels.getPanels()[0]).toMatchObject({ initialWidth: 320 });
+  });
+
   it("sorts panels by id", () => {
     const panels = new PanelRegistry();
     panels.registerPanel({ id: "c", title: "C" });

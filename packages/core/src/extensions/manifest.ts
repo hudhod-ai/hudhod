@@ -41,6 +41,7 @@ const viewContainerContribution = z.object({
   title: z.string().min(1).max(256),
   icon: z.unknown().optional(),
   location: z.enum(["left", "right", "bottom", "center"]).optional(),
+  initialWidth: z.number().finite().optional(),
 });
 
 const viewContribution = z.object({

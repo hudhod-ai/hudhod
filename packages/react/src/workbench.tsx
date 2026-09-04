@@ -256,7 +256,8 @@ function createController(
         title: panel.title,
         component: EXTENSION_PANEL_HOST,
         position,
-        initialWidth: options && "initialWidth" in options ? options.initialWidth : undefined,
+        initialWidth:
+          options && "initialWidth" in options ? options.initialWidth : panel.initialWidth,
         initialHeight: options && "initialHeight" in options ? options.initialHeight : undefined,
       });
     },

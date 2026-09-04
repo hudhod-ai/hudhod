@@ -47,19 +47,12 @@ export interface PanelContribution {
    * @defaultValue "bottom"
    */
   readonly location?: "left" | "right" | "bottom" | "center";
+  /** Initial width in pixels, for `left` and `right` panels. */
+  readonly initialWidth?: number;
 }
 
 /** An activity-bar container that can hold one or more contributed views. */
-export interface ViewContainerContribution {
-  /** Unique identifier, matching the id passed to `registerPanel`. */
-  readonly id: string;
-  /** Tab title. */
-  readonly title: string;
-  /** Opaque to the SDK; the host application defines what a valid icon value is. */
-  readonly icon?: unknown;
-  /** Preferred dock location. */
-  readonly location?: "left" | "right" | "bottom" | "center";
-}
+export interface ViewContainerContribution extends PanelContribution {}
 
 /** A collapsible body section contributed to a view container. */
 export interface ViewContribution {
