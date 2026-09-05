@@ -1,5 +1,12 @@
 # @hudhod/webcontainer
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [f892b9d]
+  - @hudhod/core@1.1.0
+
 ## 0.1.2
 
 ### Patch Changes
