@@ -13,6 +13,7 @@ import { SearchService } from "../search/search-service";
 import { ViewRegistry } from "../views/view-registry";
 import { WindowService } from "../window/window-service";
 import type { WindowUiProvider } from "../window/window-service";
+import type { WorkspaceConfig } from "../workspace/config";
 
 export interface HudhodRuntime {
   readonly fs: FileSystemService;
@@ -37,6 +38,7 @@ export interface CreateHudhodRuntimeOptions {
   readonly version?: string;
   readonly workspace?: WorkspaceApi;
   readonly terminal?: TerminalApi;
+  readonly workspaceConfig?: WorkspaceConfig;
 }
 
 const unavailableWorkspace: WorkspaceApi = {
@@ -64,7 +66,9 @@ const unavailableTerminal: TerminalApi = {
 
 /** Creates an environment-agnostic Hudhod runtime from host-provided adapters. */
 export function createHudhodRuntime(options: CreateHudhodRuntimeOptions): HudhodRuntime {
-  const fs = new FileSystemService(options.fileSystemProvider);
+  const fs = new FileSystemService(options.fileSystemProvider, {
+    config: options.workspaceConfig,
+  });
   const process = new ProcessService(options.processSpawner);
   const commands = new CommandRegistry();
   const keybindings = new KeybindingRegistry(options.platform ?? "other");
