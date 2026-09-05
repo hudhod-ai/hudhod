@@ -1,0 +1,5 @@
+---
+"@hudhod/core": minor
+---
+
+---
