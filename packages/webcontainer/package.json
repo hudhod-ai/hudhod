@@ -1,6 +1,6 @@
 {
   "name": "@hudhod/webcontainer",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "WebContainer adapters for the headless Hudhod runtime.",
   "license": "MIT",
   "files": [
